@@ -5,13 +5,9 @@ sys.path.append(os.getcwd())
 
 import numpy as np
 
-from finstruct.structure import Structure
+from finstruct.structure import Structure, Space
 from finstruct.unit import TermUnit, RateUnit, DateUnit
-from finstruct.basis import Space
 
-# def test_try_test():
-
-#     assert 2*2 == 4, ValueError("Wrong implemented")
 
 def test_structure():
 
@@ -22,10 +18,10 @@ def test_structure():
     coords = [(1, np.datetime64("2010-01-01")), (10, np.datetime64("2010-01-01"))]
     values = [0.01, 0.015]
     struct = Structure(coords, values, basis)
-    #results = struct.filter(term=1, date=np.datetime64("2010-01-01"))
+    results = struct.filter(term=1, date=np.datetime64("2010-01-01"))
     #print(results)
-    assert struct.name is not None, ValueError("Struct has no name.")
-
+    #assert struct.name is not None, ValueError("Struct has no name.")
+    assert results is None
 
 if __name__ == "__main__":
 

@@ -14,7 +14,8 @@ class Unit:
     DEFAULTS = {}
 
     def __init__(self,
-                 convention: str) -> None:
+                 convention: str,
+                 interpolation: str = None) -> None:
         
         self.set(convention)
 

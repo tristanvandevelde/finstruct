@@ -3,6 +3,13 @@ import functools
 import numpy as np
 
 
+
+"""
+Space - Basis
+Structure - Driver
+"""
+
+
 class Space:
 
     """
@@ -34,7 +41,7 @@ class Space:
         
         return np.dtype([(self.vals.name, self.vals.dtype)])
 
-class Driver:
+class Structure:
 
     """
     Structures are defined on spaces.
@@ -46,9 +53,11 @@ class Driver:
                  space: Space,
                  name: str = None) -> None:
         
+
+        self.name = name
         self.basis = space
 
-        self.coo = np.array(data_coords, dtype=self.basis.dtype_coords)
+        self.coords = np.array(data_coords, dtype=self.basis.dtype_coords)
         self.values = np.array(data_vals, dtype=self.basis.dtype_vals)
 
         self.interpolation = None
@@ -70,7 +79,6 @@ class Driver:
 
         # SIZECHECK dtypes & coords
         # SIZECHECK dtypes & vals
-        DIMCHECK("test", "test")
 
         ## Perform interpolation if necessary
         if self.interpolation:
@@ -91,7 +99,7 @@ class Driver:
         conditions = [np.isin(self.coords[str(key)], np.array(value).flatten()) for key, value in kwargs.items()]
         idx = functools.reduce(lambda a, b: a & b, conditions)
 
-        return idx, self.coords[idx], self.vals[idx]
+        return idx, self.coords[idx], self.values[idx]
     
 
     
