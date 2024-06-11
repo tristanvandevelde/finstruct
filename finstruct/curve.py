@@ -1,5 +1,4 @@
-from finstruct.structure import Structure
-from finstruct.basis import Space
+from finstruct.structure import Structure, Space
 from finstruct.unit import TermUnit, DateUnit, RateUnit
 
 

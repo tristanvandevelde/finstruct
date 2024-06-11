@@ -14,5 +14,3 @@ def SIZECHECK(item):
 def DIMCHECK(item):
 
     pass
-
-print(type(np.array))

@@ -2,11 +2,39 @@ import functools
 
 import numpy as np
 
-from finstruct.unit import Unit
-from finstruct.basis import Space
-from finstruct.tools import TYPECHECK, SIZECHECK, DIMCHECK
 
-class Structure:
+class Space:
+
+    """
+    The Space defines the dimensions and the units of structures.
+    """
+
+    def __init__(self,
+                 coords,
+                 vals):
+        
+        self.coords = coords
+        self.vals = vals
+
+        self.validate()
+
+    def validate(self):
+
+        """
+        Assert that coords and vals are both arrays containing units.
+        """
+
+    @property
+    def dtype_coords(self):
+
+        return np.dtype([(unit.name, unit.dtype) for unit in self.coords])
+
+    @property
+    def dtype_vals(self):
+        
+        return np.dtype([(self.vals.name, self.vals.dtype)])
+
+class Driver:
 
     """
     Structures are defined on spaces.
@@ -15,18 +43,16 @@ class Structure:
     def __init__(self,
                  data_coords,
                  data_vals,
-                 space: Space = None,
-                 interpolation = None) -> None:
+                 space: Space,
+                 name: str = None) -> None:
         
         self.basis = space
 
-        self.dtype_coords = np.dtype([(unit.name, unit.dtype) for unit in self.basis.coords])
-        self.dtype_vals = np.dtype([(self.basis.vals.name, self.basis.vals.dtype)])
+        self.coo = np.array(data_coords, dtype=self.basis.dtype_coords)
+        self.values = np.array(data_vals, dtype=self.basis.dtype_vals)
 
-        self.coords = np.array(data_coords, dtype=self.dtype_coords)
-        self.vals = np.array(data_vals, dtype=self.dtype_vals)
+        self.interpolation = None
 
-        self.interpolate = None
 
         #self.validate()
 
@@ -46,12 +72,16 @@ class Structure:
         # SIZECHECK dtypes & vals
         DIMCHECK("test", "test")
 
-        ## Idea: if checks fail, replace by default
+        ## Perform interpolation if necessary
+        if self.interpolation:
 
-    @property
-    def data(self):
-        
-        return np.array([self.coords, self.vals])
+            grid = self.get_grid()
+            # create values
+            # fill in known values
+            # interpolate unknown values
+            # set coo and values
+
+
     
     def filter(self,
                **kwargs):
@@ -73,12 +103,9 @@ class Structure:
         """
 
         if idx is None:
-
             idx = np.full(self.len, True)
 
         coords = self.coords[idx]
-
-
         uniquevals = [coords[name].unique() for name in self.coords.names]
         
         return self.create_grid(zip(self.coords.names, uniquevals))
@@ -94,7 +121,7 @@ class Structure:
         uniquevals = np.array(kwargs.values())
 
         grid = np.array(np.meshgrid(*uniquevals, indexing='ij'))
-        grid = grid.reshape(3,-1).T
+        grid = grid.reshape(self.ndim_coordinates,-1).T
 
         return grid
 
@@ -113,7 +140,13 @@ class Structure:
                 ## interpolate
                 pass
 
+        return values
 
+    def select(self):
+        pass
+
+    def get_values(self):
+        pass
 
     @property
     def len(self):
