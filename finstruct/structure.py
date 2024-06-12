@@ -2,6 +2,7 @@ import functools
 
 import numpy as np
 
+from finstruct.unit import Unit
 
 
 """
@@ -9,8 +10,7 @@ Space - Basis
 Structure - Driver
 """
 
-
-class Space:
+class Basis:
 
     """
     The Space defines the dimensions and the units of structures.
@@ -41,53 +41,52 @@ class Space:
         
         return np.dtype([(self.vals.name, self.vals.dtype)])
 
-class Structure:
+
+class Driver:
 
     """
     Structures are defined on spaces.
     """
 
+    DEFAULTS = {
+        "BASIS": None #Basis(Unit())
+    }
+
     def __init__(self,
                  data_coords,
                  data_vals,
-                 space: Space,
+                 basis: Basis,
                  name: str = None) -> None:
         
 
         self.name = name
-        self.basis = space
-
+        self.basis = basis
+        
         self.coords = np.array(data_coords, dtype=self.basis.dtype_coords)
         self.values = np.array(data_vals, dtype=self.basis.dtype_vals)
 
-        self.interpolation = None
+        self.interpolation = False
 
-
-        #self.validate()
+        self.validate()
 
     def validate(self):
 
         ## Set defaults if empty
-        if space is None:
-            space = self.DEFAULTS["BASIS"]
+        if self.basis is None:
+            self.basis = self.DEFAULTS["BASIS"]
 
         ## Do checks
 
-        TYPECHECK(self.basis, Space)
-
-        SIZECHECK(self.coords, self.vals)
+        #TYPECHECK(self.basis, Space)
+        #SIZECHECK(self.coords, self.vals)
 
         # SIZECHECK dtypes & coords
         # SIZECHECK dtypes & vals
 
-        ## Perform interpolation if necessary
         if self.interpolation:
+            pass
 
-            grid = self.get_grid()
-            # create values
-            # fill in known values
-            # interpolate unknown values
-            # set coo and values
+
 
 
     

@@ -1,18 +1,40 @@
-from finstruct.structure import Structure, Space
+import numpy as np
+import numpy.typing as npt
+
+from finstruct.structure import Basis, Driver
 from finstruct.unit import TermUnit, DateUnit, RateUnit
 
 
-class IRBaseCurve(Structure):
+class IRCurve(Driver):
 
-    DEFAULTS = {
-        "BASIS": Space([TermUnit("D")], RateUnit("SPOT"))
-    }
+    DEFAULTS = { "BASIS": Basis([DateUnit(), TermUnit("D")], RateUnit("SPOT"))}
+           
 
-
-class IRHistCurve(Structure):
-
-        DEFAULTS = {
-        "BASIS": Space([DateUnit(), TermUnit("D")], RateUnit("SPOT"))
-    }
+    def __init__(self,
+                 coords,
+                 data,
+                 basis: Basis = None):
         
-## For the time being, implement combining methods in the curve. Maybe later to  be extended towards structure.
+        super().__init__(coords, data, basis)
+
+    def get_fwd(self,
+                terms):
+        
+        """
+        Given two moments a and b, with b<a, the forward rate is calculated as:
+        ((1 + ra)^ta / (1 + rb)^tb) - 1
+        """
+
+        return None
+    
+    def get_disc(self,
+                 terms: npt.ArrayLike):
+        
+        """
+        Returns the discount factors for given term points.
+        """
+        
+        spot_rates = self.get_values(terms=terms)
+        disc_factors = 1/np.power(1 + spot_rates, terms)
+
+        return disc_factors
