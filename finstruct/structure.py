@@ -64,6 +64,7 @@ class Driver:
         
         self.coords = np.array(data_coords, dtype=self.basis.dtype_coords)
         self.values = np.array(data_vals, dtype=self.basis.dtype_vals)
+        self.interpolation = None
 
         self.interpolation = False
 
@@ -87,13 +88,16 @@ class Driver:
             pass
 
 
+    def fill(self):
+
+        """
+        Interpolate the driver on a discrete (full) grid.
+        """
 
 
     
     def filter(self,
                **kwargs):
-        
-
 
         conditions = [np.isin(self.coords[str(key)], np.array(value).flatten()) for key, value in kwargs.items()]
         idx = functools.reduce(lambda a, b: a & b, conditions)
@@ -137,6 +141,12 @@ class Driver:
                 **kwargs):
         
 
+        ## TO IMPLEMENT
+        pass
+
+    def get_values(self,
+                   **kwargs):
+        
         grid = self.create_grid(**kwargs)
         values = np.empty((len(grid), self.ndim_values))
 
@@ -149,11 +159,6 @@ class Driver:
 
         return values
 
-    def select(self):
-        pass
-
-    def get_values(self):
-        pass
 
     @property
     def len(self):
