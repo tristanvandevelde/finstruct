@@ -15,17 +15,14 @@ class Calendar:
     DEFAULTS = {}
 
     def __init__(self,
-                 data: npt.ArrayLike,   # list of dicts
+                 #data: npt.ArrayLike,   # list of dicts
+                 dates,
+                 values,
                  units: npt.ArrayLike = None):
 
         # Assert length and all that stuff
-
-        if units is None:
-            # set defaults
-            units = ["DateUnit", "MoneyUnit"]
-        self.units = np.array(units)    # add dtype
-        self.dtypes = np.dtype([("Date", datetime.date), ("Cashflow", float)])
-        self.data = np.array([(el["Date"], el["Cashflow"]) for el in data], dtype=self.dtypes)
+        self.dtypes = np.dtype([("date", "datetime64[D]"), ("amount", "f4")])
+        self.data = np.array(list(zip(dates, values)), dtype=self.dtypes)
 
     @classmethod
     def read_csv(cls,
@@ -35,24 +32,26 @@ class Calendar:
         Create Calendar object from a .csv-file.
         """
         
-        with open(file=file, mode="r", newline="\n", encoding="utf-8-sig") as csvfile:
+        with open(file=file, mode="r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile, delimiter=",")
-            #print(reader.fieldnames)
             data = list(reader)
-        
-        return cls(data)
 
+        dates = [row["Date"] for row in data]
+        values = [row["Cashflow"] for row in data]
+        
+        return cls(dates, values)
 
     def get_npv(self,
-                curve):
-
+                curve,
+                date):
 
         # get timedelta
         # get discount factor of timedelta
         # multiply with cashflow
         # multiply with numeraire
 
-        return None
+        disc_factor = 1/1.2
+        date = datetime.date(2000, 1, 1)
     
     def get_rate(self,
                  prices):

@@ -1,4 +1,5 @@
 import datetime
+import calendar 
 
 import numpy as np
 
@@ -10,12 +11,12 @@ class Unit:
 
     name = None
     dtype = None
-    CONVENTIONS = ()
+    type = None
+    CONVENTIONS = {}
     DEFAULTS = {}
 
     def __init__(self,
-                 convention: str,
-                 interpolation: str = None) -> None:
+                 convention: str) -> None:
         
         self.set(convention)
 
@@ -30,16 +31,16 @@ class Unit:
             self.type = convention
         else:
             raise ValueError("Convention not implemented.")
+        
+    @property
+    def convention(self) -> set:
+
+        return self.type, self.CONVENTIONS[self.type]
 
     def convert(self,
                 convention: str) -> callable:
         
         return True
-    
-    # @property
-    # def type(self):
-    #     return self.CONVENTIONS[self.type]
-
 
     def validate(self):
 
@@ -49,6 +50,11 @@ class Unit:
                 self.__setattr__(key, value)
 
 class DaycountUnit(Unit):
+
+    """
+    The DaycountUnit is an abstract unit, used by the DateUnit and the TermUnit.
+    It provides the measurements to calculate date differences under different conventions.
+    """
 
     name = "daycount"
     dtype = str
@@ -62,7 +68,34 @@ class DaycountUnit(Unit):
     )
 
     def set(self,
-            convention: str) -> None:
+            convention: str) -> bool:
+        
+        """
+        Set the convention of the unit and convert.
+
+        Parameters
+        ----------
+        convention: string
+            Convention to which to convert the Unit
+
+        Raises
+        ------
+        Exception
+            convention must be implemented
+
+        Returns
+        -------
+        bool
+            Information code if the conversion has been correctly executed.
+
+        Example
+        -------
+
+        unit.convert("30/360")
+
+        """
+
+
         
         super().set(convention)
         [measure, base] = convention.split("/")
@@ -93,8 +126,8 @@ class TermUnit(Unit):
     dtype = float
 
     CONVENTIONS = (
-        "D",
-        "Y"
+        "D",        # daycount
+        "Y"         # yearfraction
     )
 
     def __init__(self,
@@ -107,10 +140,19 @@ class TermUnit(Unit):
 class DateUnit(Unit):
 
     name = "date"
-    dtype = datetime.date
+    dtype = "timedelta64[D]"
 
     def __init__(self):
         pass
+
+    def to_numerical(value):
+
+        """
+        Returns a numerical value for the date to be used in calculations.
+        More concretely, the date is converted to a timestamp.
+        """
+
+        return calendar.timegm(value.timetuple())
 
 
         
@@ -127,19 +169,19 @@ class RateUnit(Unit):
         "ZERO"
     )
 
-class MoneynessUnit(Unit):
+# class GenericUnit(Unit):
 
-    name = "moneyness"
-    dtype = float
+#     name = None
+#     dtype = float
 
-class VolatilityUnit(Unit):
+#     CONVENTIONS = {None}
 
-    name = "volatility"
-    dtype = float
+# class MoneynessUnit(Unit):
 
-class GenericUnit(Unit):
+#     name = "moneyness"
+#     dtype = float
 
-    name = None
-    dtype = float
+# class VolatilityUnit(Unit):
 
-    CONVENTIONS = {None}
+#     name = "volatility"
+#     dtype = float

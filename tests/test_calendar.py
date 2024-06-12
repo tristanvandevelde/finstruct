@@ -5,7 +5,7 @@ import numpy as np
 import pytest 
 
 from finstruct.unit import TermUnit, RateUnit, DateUnit
-from products.calendar import Calendar
+from finstruct.calendar import Calendar
 
 
 def test_calendar():
