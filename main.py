@@ -31,23 +31,23 @@ driver = Driver(coords, values, basis)
 x = [1, 10]
 y = ["a", "b"]
 
-grid = np.meshgrid(x, y, indexing='ij')
 
-arr = np.array(grid).reshape(2,-1).T
-newarr = np.core.records.fromarrays(arr.transpose())
-newarr = np.array(newarr, dtype=[("x",float),("y",str)])
-
-print(np.array(driver.coords))
+#print(np.array(driver.coords))
 #print(np.isin(driver.coords, (1, np.datetime64("2010-01-01", "D"))))
 
 # #interpolator = RegularGridInterpolator(coords, values, method="linear")
 # #new_vals = interpolator(new_coords)]
 
-#unstructured = np.lib.recfunctions.structured_to_unstructured(driver.coords)
-#print(unstructured)
 
-#from numpy.lib.recfunctions import structured_to_unstructured
-#print(structured_to_unstructured(driver.coords))
+#print(driver.coords.dtype.names)
+dates = [np.datetime64(datetime.date(2010,1,1), "D")]
+terms = [10, 30]
+grid = driver.create_grid(dates, terms)
+conditions = dict(zip(["date", "term"], grid.T))
+idx = driver.filter(**conditions)
 
-print(driver.coords.dtype.names)
-
+if idx.any():
+    value = driver.values[idx]
+else:
+    # interpolate
+    pass

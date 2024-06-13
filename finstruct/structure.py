@@ -100,57 +100,21 @@ class Driver:
         """
 
 
-    def isin(self,
+    def filter(self,
              **kwargs):
         
         """
-        
+        For given conditions on each variable, extract the observations adhering to these.
         """
+
+        conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self.coords.dtype.names}
+        idx = np.array([np.isin(self.coords[str(variable)], condition) for variable, condition in conditions.items()])
+        idx = np.array([all(tup) for tup in zip(*idx)])
+
+        return idx
 
     
-    def filter(self,
-               **kwargs):
-        
-        """
-        Still implement this as foreseen. 
-        Just maybe execute in combination with make grid.
-        Filter should be used for only 1 observation.
-        """
-        
-        # print(kwargs)
-        # conditions = {key: np.asarray(value) for key, value in kwargs.items()}
-        # for key in conditions.keys():
-        #     if not key in self.basis.name_coords:
-        #         raise ValueError("Coordinate variable not recognized.")
 
-        # print(self.basis.coords)
-
-        #conditions = [np.isin(self.coords[str(key)], np.array(value).flatten()) for key, value in kwargs.items()]
-        #print(type(conditions))
-        #idx = functools.reduce(lambda a, b: a & b, conditions)
-        #for key, value in kwargs.items()]
-
-        #np.isin(element_to_test, conditions)
-        # for variable, condition in kwargs.items():
-        #     #print(type(np.asarray(condition)))
-        #     print(str(variable))
-        #     print(np.isin(self.coords[str(variable)], condition))
-
-        # conditions = [np.isin(self.coords[str(variable)], np.asarray(condition)) for variable, condition in kwargs.items()]
-        # #print(conditions)
-        # #idx = [any(el) for el in zip(tuple(conditions))]
-        # #print(zip(conditions))
-        # idx = [el.all() for el in zip(conditions)]
-        # print(idx)
-        # #print(idx)
-        # #idx = all()
-        #return idx, self.coords[idx], self.values[idx]
-
-        ## Create grid of these elements
-        conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items()}
-        print(list(conditions.values()))
-
-    
     # def get_grid(self,
     #              idx = None):
 
@@ -168,19 +132,18 @@ class Driver:
         
 
     def create_grid(self,
-                    **kwargs):
+                    *args):
         
     #     """
     #     Creates a grid of the requested values.
     #     """
 
-        uniquevals = np.array(kwargs.values())
+        grid = np.meshgrid(*args, indexing='ij')
+        grid = np.array(grid).reshape(len(args),-1).T
+        
+        return grid
 
-        grid = np.array(np.meshgrid(*uniquevals, indexing='ij'))
-        print(grid)
-    #     grid = grid.reshape(self.ndim_coordinates,-1).T
 
-    #     return grid
 
 
 
