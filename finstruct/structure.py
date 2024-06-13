@@ -35,6 +35,11 @@ class Basis:
     def dtype_coords(self):
 
         return np.dtype([(unit.name, unit.dtype) for unit in self.coords])
+    
+    @property
+    def name_coords(self):
+
+        return np.array([unit.name for unit in self.coords])
 
     @property
     def dtype_vals(self):
@@ -95,54 +100,89 @@ class Driver:
         """
 
 
+    def isin(self,
+             **kwargs):
+        
+        """
+        
+        """
+
     
     def filter(self,
                **kwargs):
-
-        conditions = [np.isin(self.coords[str(key)], np.array(value).flatten()) for key, value in kwargs.items()]
-        idx = functools.reduce(lambda a, b: a & b, conditions)
-
-        return idx, self.coords[idx], self.values[idx]
-    
-
-    
-    def get_grid(self,
-                 idx = None):
-
-        """
-        Creates a grid of the stored values.
-        """
-
-        if idx is None:
-            idx = np.full(self.len, True)
-
-        coords = self.coords[idx]
-        uniquevals = [coords[name].unique() for name in self.coords.names]
         
-        return self.create_grid(zip(self.coords.names, uniquevals))
+        """
+        Still implement this as foreseen. 
+        Just maybe execute in combination with make grid.
+        Filter should be used for only 1 observation.
+        """
+        
+        # print(kwargs)
+        # conditions = {key: np.asarray(value) for key, value in kwargs.items()}
+        # for key in conditions.keys():
+        #     if not key in self.basis.name_coords:
+        #         raise ValueError("Coordinate variable not recognized.")
+
+        # print(self.basis.coords)
+
+        #conditions = [np.isin(self.coords[str(key)], np.array(value).flatten()) for key, value in kwargs.items()]
+        #print(type(conditions))
+        #idx = functools.reduce(lambda a, b: a & b, conditions)
+        #for key, value in kwargs.items()]
+
+        #np.isin(element_to_test, conditions)
+        # for variable, condition in kwargs.items():
+        #     #print(type(np.asarray(condition)))
+        #     print(str(variable))
+        #     print(np.isin(self.coords[str(variable)], condition))
+
+        # conditions = [np.isin(self.coords[str(variable)], np.asarray(condition)) for variable, condition in kwargs.items()]
+        # #print(conditions)
+        # #idx = [any(el) for el in zip(tuple(conditions))]
+        # #print(zip(conditions))
+        # idx = [el.all() for el in zip(conditions)]
+        # print(idx)
+        # #print(idx)
+        # #idx = all()
+        #return idx, self.coords[idx], self.values[idx]
+
+        ## Create grid of these elements
+        conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items()}
+        print(list(conditions.values()))
+
+    
+    # def get_grid(self,
+    #              idx = None):
+
+    #     """
+    #     Creates a grid of the stored values.
+    #     """
+
+    #     if idx is None:
+    #         idx = np.full(self.len, True)
+
+    #     coords = self.coords[idx]
+    #     uniquevals = [coords[name].unique() for name in self.coords.names]
+        
+    #     return self.create_grid(zip(self.coords.names, uniquevals))
         
 
     def create_grid(self,
                     **kwargs):
         
-        """
-        Creates a grid of the requested values.
-        """
+    #     """
+    #     Creates a grid of the requested values.
+    #     """
 
         uniquevals = np.array(kwargs.values())
 
         grid = np.array(np.meshgrid(*uniquevals, indexing='ij'))
-        grid = grid.reshape(self.ndim_coordinates,-1).T
+        print(grid)
+    #     grid = grid.reshape(self.ndim_coordinates,-1).T
 
-        return grid
+    #     return grid
 
-    
-    def __get__(self,
-                **kwargs):
-        
 
-        ## TO IMPLEMENT
-        pass
 
     def get_values(self,
                    **kwargs):
@@ -159,21 +199,28 @@ class Driver:
 
         return values
 
-
-    @property
-    def len(self):
-
-        return len(self.vals)
     
-    @property
-    def ndim_coordinates(self):
-    
-        return self.coords.shape[0]
-    
-    @property
-    def ndim_values(self):
+    # def __get__(self,
+    #             **kwargs):
+        
 
-        return self.vals.shape[0]
+    #     ## TO IMPLEMENT
+    #     pass
+
+    # @property
+    # def len(self):
+
+    #     return len(self.vals)
+    
+    # @property
+    # def ndim_coordinates(self):
+    
+    #     return self.coords.shape[0]
+    
+    # @property
+    # def ndim_values(self):
+
+    #     return self.vals.shape[0]
     
 
     ## Combining structures can also be generally implemented

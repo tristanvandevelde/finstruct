@@ -9,55 +9,45 @@ import numpy as np
 import pandas as pd
 
 from finstruct.unit import TermUnit, RateUnit, DateUnit, DaycountUnit
-# from finstruct.structure import Basis, Driver
+from finstruct.structure import Basis, Driver
 # from finstruct.curve import IRCurve
 from finstruct.calendar import Calendar
 
-# coords_unit = [TermUnit("D"), DateUnit()]
-# values_unit = RateUnit("SPOT")
+coords_unit = [TermUnit("D"), DateUnit(None)]
+values_unit = RateUnit("SPOT")
 
-# basis = Basis(coords_unit, values_unit)
-# coords = [(1, np.datetime64("2010-01-01")), (10, np.datetime64("2010-01-01"))]
-# values = [0.01, 0.015]
+basis = Basis(coords_unit, values_unit)
+coords = [(1, np.datetime64("2010-01-01")), (10, np.datetime64("2010-01-01"))]
+values = [0.01, 0.015]
+driver = Driver(coords, values, basis)
+#print(driver.coords)
+#print(driver.values)
+
+
 # curve = IRCurve(coords, values, basis)
-# results = curve.filter(term=1, date=np.datetime64("2010-01-01"))
+#results = driver.filter(term=[1, 10], date=np.datetime64("2010-01-01"))
+#print(basis.name_coords)
+#driver.create_grid(term=[1, 10], date=np.datetime64("2010-01-01"))
+x = [1, 10]
+y = ["a", "b"]
 
+grid = np.meshgrid(x, y, indexing='ij')
 
-# date1 = datetime.date(2000, 1, 1)
-# date2 = datetime.date(2010, 1, 1)
+arr = np.array(grid).reshape(2,-1).T
+newarr = np.core.records.fromarrays(arr.transpose())
+newarr = np.array(newarr, dtype=[("x",float),("y",str)])
 
-# print((date2 - date1).days)
-# print(np.datetime64(date2) - np.datetime64(date1))
-# print(date1.year)
-
-# date3 = np.datetime64(date2)
-# # if is numpy
-# print(date3.astype(datetime.date))
-
-# print(date2 > date1)
-
-# def daycount_act_act(date1, date2):
-
-#     # we assume that date1 < date2
-#     leap_years = [y for y in range(date1.year, date2.year) if calendar.isleap(y)]
-#     leap_periods = [[dates, dates], [dates, dates]]
-#     nonleap_periods = [[dates_dates], [dates, dates]]
-
-
-
-
-
+print(np.array(driver.coords))
+#print(np.isin(driver.coords, (1, np.datetime64("2010-01-01", "D"))))
 
 # #interpolator = RegularGridInterpolator(coords, values, method="linear")
-# #new_vals = interpolator(new_coords)
+# #new_vals = interpolator(new_coords)]
 
+#unstructured = np.lib.recfunctions.structured_to_unstructured(driver.coords)
+#print(unstructured)
 
+#from numpy.lib.recfunctions import structured_to_unstructured
+#print(structured_to_unstructured(driver.coords))
 
-dcunit = DaycountUnit("30/360")
-dunit = DateUnit(None, dcunit)
-cal = Calendar.read_csv("data/config/calendar1.csv", dateunit=dunit)
+print(driver.coords.dtype.names)
 
-eval_date = np.datetime64("2000-01-01", "D")
-npv = cal.get_npv(eval_date)
-
-print(npv)
