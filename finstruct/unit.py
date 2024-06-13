@@ -2,6 +2,7 @@ import datetime
 import calendar 
 
 import numpy as np
+import numpy.typing as npt
 
 class Unit:
 
@@ -12,7 +13,7 @@ class Unit:
     name = None
     dtype = None
     type = None
-    CONVENTIONS = {}
+    CONVENTIONS = ()
     DEFAULTS = {}
 
     def __init__(self,
@@ -22,10 +23,6 @@ class Unit:
 
     def set(self,
             convention: str) -> None:
-        
-        """
-        
-        """
 
         if convention in list(self.CONVENTIONS):
             self.type = convention
@@ -57,7 +54,7 @@ class DaycountUnit(Unit):
     """
 
     name = "daycount"
-    dtype = str
+    dtype = None
 
     CONVENTIONS = (
         "30/360",
@@ -69,56 +66,52 @@ class DaycountUnit(Unit):
 
     def set(self,
             convention: str) -> bool:
-        
-        """
-        Set the convention of the unit and convert.
 
-        Parameters
-        ----------
-        convention: string
-            Convention to which to convert the Unit
-
-        Raises
-        ------
-        Exception
-            convention must be implemented
-
-        Returns
-        -------
-        bool
-            Information code if the conversion has been correctly executed.
-
-        Example
-        -------
-
-        unit.convert("30/360")
-
-        """
-
-
-        
         super().set(convention)
-        [measure, base] = convention.split("/")
-        try:
-            self.measure = int(measure)
-        except:
-            self.measure = measure
-        try:
-            self.base = int(base)
-        except:
-            self.base = base
+        [month, year] = convention.split("/")
 
-    def daycount(self,
-                 start_date: datetime.date,
-                 end_date: datetime.date) -> int:
-        
-        pass
+        try:
+            month = int(month)
+        except:
+            pass
 
-    def yearfraction(self,
-                     start_date: datetime.date,
-                     end_date: datetime.date) -> float:
+        try:
+            year = int(year)
+        except:
+            pass
+
+        self.fractions = {
+            "day": 1,
+            "month": month,
+            "year": year
+        }
+
+
+    def calc_daycount(self,
+                      start_date: np.datetime64,
+                      end_date: np.datetime64) -> int:
         
-        pass
+        if self.fractions["month"] == "ACT":
+            days = int(end_date - start_date)
+        else:
+            get_date = lambda x: np.array([x.day, x.month, x.year])
+            start_date = get_date(start_date.astype("object"))
+            end_date = get_date(end_date.astype("object"))
+            diff = end_date - start_date
+            #days = int(np.sum(diff * list(self.fractions.values()), axis=1))
+            #print(diff)
+            days = np.sum(diff * list(self.fractions.values()))
+
+        return days
+
+    def calc_yearfraction(self,
+                          start_date: np.datetime64,
+                          end_date: np.datetime64) -> float:
+        
+        if self.fractions["year"] == "ACT":
+            raise ValueError("Not implemented")
+        else:
+            return self.calc_daycount(start_date, end_date)/self.fractions["year"]
 
 class TermUnit(Unit):
 
@@ -137,13 +130,20 @@ class TermUnit(Unit):
         super().__init__(convention)
         self.daycount = daycount
 
+
 class DateUnit(Unit):
 
     name = "date"
-    dtype = "timedelta64[D]"
+    dtype = "datetime64[D]"
 
-    def __init__(self):
-        pass
+    CONVENTIONS = [None]
+
+    def __init__(self,
+                 convention: str,
+                 daycount: DaycountUnit = None) -> None:
+        
+        super().__init__(convention)
+        self.daycount = daycount
 
     def to_numerical(value):
 
@@ -180,6 +180,11 @@ class RateUnit(Unit):
 
 #     name = "moneyness"
 #     dtype = float
+
+# class MoneyUnit(Unit):
+
+#     name = "money"
+#     dtype = "f8"
 
 # class VolatilityUnit(Unit):
 
