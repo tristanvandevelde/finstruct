@@ -1,6 +1,7 @@
 import functools
 
 import numpy as np
+from scipy.interpolate import RegularGridInterpolator
 
 from finstruct.unit import Unit
 
@@ -69,9 +70,9 @@ class Driver:
         
         self.coords = np.array(data_coords, dtype=self.basis.dtype_coords)
         self.values = np.array(data_vals, dtype=self.basis.dtype_vals)
-        self.interpolation = None
+        self.interpolation = RegularGridInterpolator
 
-        self.interpolation = False
+        self.interpolate = False
 
         self.validate()
 
@@ -144,23 +145,26 @@ class Driver:
         return grid
 
 
-
-
-
     def get_values(self,
                    **kwargs):
         
-        grid = self.create_grid(**kwargs)
-        values = np.empty((len(grid), self.ndim_values))
+        """
+        Get values given by condition.
+        """
+        
+        names = list(kwargs.keys())
+        values = list(kwargs.values())
 
-        for idx, coordinates in grid:
-            try:
-                _, _, values[idx] = self.filter(zip(self.coords.names, coordinates))
-            except:
-                ## interpolate
+        grid = self.create_grid(*values)
+        for value in grid.T:
+            conditions = dict(zip(names, value))
+            idx = self.filter(**conditions)
+            if idx.any():
+                val = self.values[idx]
+            else:
+                # interpolate
                 pass
 
-        return values
 
     
     # def __get__(self,

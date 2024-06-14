@@ -17,8 +17,16 @@ coords_unit = [TermUnit("D"), DateUnit(None)]
 values_unit = RateUnit("SPOT")
 
 basis = Basis(coords_unit, values_unit)
-coords = [(1, np.datetime64("2010-01-01")), (10, np.datetime64("2010-01-01"))]
-values = [0.01, 0.015]
+coords = [(1, np.datetime64("2010-01-01")), 
+          (10, np.datetime64("2010-01-01")),
+          (30, np.datetime64("2010-01-01")),
+          (10, np.datetime64("2010-01-05")),
+          (30, np.datetime64("2010-01-05")),]
+values = [0.01, 
+          0.015,
+          0.02,
+          0.015,
+          0.022]
 driver = Driver(coords, values, basis)
 #print(driver.coords)
 #print(driver.values)
@@ -28,8 +36,7 @@ driver = Driver(coords, values, basis)
 #results = driver.filter(term=[1, 10], date=np.datetime64("2010-01-01"))
 #print(basis.name_coords)
 #driver.create_grid(term=[1, 10], date=np.datetime64("2010-01-01"))
-x = [1, 10]
-y = ["a", "b"]
+
 
 
 #print(np.array(driver.coords))
@@ -40,14 +47,21 @@ y = ["a", "b"]
 
 
 #print(driver.coords.dtype.names)
-dates = [np.datetime64(datetime.date(2010,1,1), "D")]
-terms = [10, 30]
+dates = [np.datetime64(datetime.date(2010,1,1)), np.datetime64(datetime.date(2010,1,5))]
+terms = [1, 10, 30]
 grid = driver.create_grid(dates, terms)
 conditions = dict(zip(["date", "term"], grid.T))
-idx = driver.filter(**conditions)
 
-if idx.any():
-    value = driver.values[idx]
-else:
-    # interpolate
-    pass
+# if idx.any():
+#     value = driver.values[idx]
+# else:
+#     # interpolate
+#     pass
+
+#driver.get_values(date=[1,2])
+print(grid)
+print(conditions)
+
+idx = driver.filter(**conditions)
+print(idx)
+
