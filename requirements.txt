@@ -1,4 +1,5 @@
 # Example file for testing
 
 numpy
+scipy
 pytest
