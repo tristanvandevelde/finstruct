@@ -1,3 +1,5 @@
+import csv
+
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
@@ -8,7 +10,7 @@ from finstruct.unit import TermUnit, DateUnit, RateUnit
 
 class IRCurve(Driver):
 
-    DEFAULTS = { "BASIS": Basis([DateUnit(), TermUnit("D")], RateUnit("SPOT"))}
+    DEFAULTS = { "BASIS": Basis([DateUnit(None), TermUnit("D")], RateUnit("SPOT"))}
            
 
     def __init__(self,
@@ -19,7 +21,8 @@ class IRCurve(Driver):
         super().__init__(coords, data, basis)
 
     def get_fwd(self,
-                terms):
+                terms: npt.ArrayLike,
+                dates: npt.ArrayLike):
         
         """
         Given two moments a and b, with b<a, the forward rate is calculated as:
@@ -29,7 +32,8 @@ class IRCurve(Driver):
         return None
     
     def get_disc(self,
-                 terms: npt.ArrayLike):
+                 terms: npt.ArrayLike,
+                 dates: npt.ArrayLike):
         
         """
         Returns the discount factors for given term points.
@@ -49,3 +53,39 @@ class IRCurve(Driver):
 
         plt.plot(coords, values)
         plt.show()
+
+
+class IRBaseCurve(Driver):
+
+    """
+    Interest rate Base Curve class to represt a termstructure at 1 moment in time.
+    """
+
+    DEFAULTS = { "BASIS": Basis([TermUnit("Y")], RateUnit("SPOT"))}
+
+    def __init__(self,
+                 terms,
+                 rates,
+                 basis = None):
+        
+        if basis is None:
+            basis = self.DEFAULTS["BASIS"]
+        
+        super().__init__(terms, rates, basis)
+
+    def shift(self):
+        pass
+
+    @classmethod
+    def read_csv(cls,
+                 file,
+                 basis = None):
+        
+        with open(file=file, mode="r", encoding="utf-8-sig") as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=",")
+            data = list(reader)
+
+        terms = [row["term"] for row in data]
+        rates = [row["rate"] for row in data]
+
+        return cls(terms, rates, basis)
