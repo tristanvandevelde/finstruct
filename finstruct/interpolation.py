@@ -1,7 +1,9 @@
+from abc import ABCmeta
+
 import numpy as np
 import numpy.typing as npt
 
-class Interpolation:
+class Interpolation(metaclass=ABCmeta):
 
     def __init__(self,
                  coords: npt.ArrayLike,
@@ -36,9 +38,10 @@ class Interpolation:
         """
         
         values = np.empty(len(coords))
-        it = np.nditer(values, flas=["f_index"])
-        for _ in it:
-            values[it.index] = self.evaluate(coords[it.index])
+        it = np.nditer([coords, values], flags=["f_index"])
+        for coords, values in it:
+            values[it.index] = self.evaluate(coords)
         
         return values
-            
+
+
