@@ -100,12 +100,11 @@ class Driver:
         Interpolate the driver on a discrete (full) grid.
         """
 
-
-    def filter(self,
-             **kwargs):
+    def idx(self,
+            **kwargs):
         
         """
-        For given conditions on each variable, extract the observations adhering to these.
+        Given the conditions on each variable, return the index for the observations adhering to this.
         """
 
         conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self.coords.dtype.names}
@@ -114,7 +113,25 @@ class Driver:
 
         return idx
 
-    
+
+    def filter(self,
+               **kwargs):
+        
+        """
+        For given conditions on each variable, extract the observations adhering to these.
+        """
+
+        idx = self.idx(**kwargs)
+        #return self.values[idx]
+        result = self.values[idx]
+        #return self.values.dtype
+        # The issue with the folowwing is that a single Numpy Array can have only 1 type
+        # return result.view(self.basis.dtype_vals.type).reshape(result.shape + (-1,))
+        # Array
+        #return result.view(np.float64).reshape(result.shape + (-1,))
+        # Structured array
+        return result.view().reshape(result.shape + (-1,))
+
 
     # def get_grid(self,
     #              idx = None):
