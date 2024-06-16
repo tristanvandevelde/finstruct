@@ -1,6 +1,7 @@
 import functools
 
 import numpy as np
+import numpy.typing as npt
 from scipy.interpolate import RegularGridInterpolator
 
 from finstruct.unit import Unit
@@ -10,6 +11,9 @@ from finstruct.unit import Unit
 Space - Basis
 Structure - Driver
 """
+
+## TODO
+## Every unit can be used exactly once, or more?
 
 class Basis:
 
@@ -93,13 +97,6 @@ class Driver:
         if self.interpolation:
             pass
 
-
-    def fill(self):
-
-        """
-        Interpolate the driver on a discrete (full) grid.
-        """
-
     def idx(self,
             **kwargs):
         
@@ -131,23 +128,6 @@ class Driver:
         #return result.view(np.float64).reshape(result.shape + (-1,))
         # Structured array
         return result.view().reshape(result.shape + (-1,))
-
-
-    # def get_grid(self,
-    #              idx = None):
-
-    #     """
-    #     Creates a grid of the stored values.
-    #     """
-
-    #     if idx is None:
-    #         idx = np.full(self.len, True)
-
-    #     coords = self.coords[idx]
-    #     uniquevals = [coords[name].unique() for name in self.coords.names]
-        
-    #     return self.create_grid(zip(self.coords.names, uniquevals))
-        
 
     def create_grid(self,
                     *args):
@@ -182,7 +162,16 @@ class Driver:
                 # interpolate
                 pass
 
+    def interpolate(self,
+                    coords: npt.ArrayLike):
+        
+        coords_input = self.coords.view().reshape(self.coords.shape + (-1,))
+        values_input = self.values.view().reshape(self.coords.shape + (-1,))
 
+
+        interpolator = RegularGridInterpolator(coords_input, values_input, method="linear")
+
+        return interpolator(coords)
     
     # def __get__(self,
     #             **kwargs):
@@ -208,6 +197,3 @@ class Driver:
     
 
     ## Combining structures can also be generally implemented
-
-
-
