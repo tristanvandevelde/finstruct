@@ -11,9 +11,6 @@ def test_unit():
 
     pass
 
-    # cal = Calendar.read_csv(f"data/config/calendar1.csv")
-    # assert len(cal.data) == 4
-
 
 if __name__ == "__main__":
 
