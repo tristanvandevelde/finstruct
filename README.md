@@ -20,7 +20,6 @@ This library does not have as goal to be a one-stop-shop for all financial analy
      -   [ ] Discount
      -   [ ] Forward
      -   [ ] Par
-    
 - [ ] Implement framework for interpolation
 
 ## Questions
@@ -32,10 +31,9 @@ A possibility could also be to make it inherit from userdict, by using the dates
 
 ```mermaid
 graph TD;
-    Unit-->Driver;
-    Interpolation-->Driver;
-    Driver-->Basis;
-    Driver-->Calendar;
+    Unit-->Basis;
+    Interpolation-->Basis;
+    Unit-->Calendar;
     Basis-->Structure;
     Structure-->Point;
     Structure-->Curve;
