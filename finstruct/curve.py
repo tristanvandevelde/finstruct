@@ -65,7 +65,7 @@ class IRCurve(Structure):
                 """
             ## TODO: Implement for multiple curves way to combine these.
 
-        idx = self.idx(date=date)
+        idx = self.idx(**kwargs)
         coords = self.coords[idx].view(np.float64)
         values = self.values[idx].view(np.float64)
 
@@ -114,5 +114,13 @@ class IRMultiCurve:
     Class to hold information about multiple curves.
     Maybe should be in a general universe-type class, allowing combination of different drivers.
     """
+
+    pass
+
+class Movement:
+
+    pass
+
+class Shift(Movement):
 
     pass

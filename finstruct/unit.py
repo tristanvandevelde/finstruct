@@ -14,26 +14,20 @@ class Unit:
     dtype = None
     type = None
     CONVENTIONS = ()
-    DEFAULTS = {}
+    DEFAULTS = {
+        "convention": None,
+        "interpolation": False
+    }
 
     def __init__(self,
-                 convention: str) -> None:
+                 convention: str,
+                 interpolation = False) -> None:
         
-        self.set(convention)
+        self.convention = convention
+        self.interpolation = interpolation
 
-    def set(self,
-            convention: str) -> None:
 
-        if convention in list(self.CONVENTIONS):
-            self.type = convention
-        else:
-            raise ValueError("Convention not implemented.")
         
-    # @property
-    # def convention(self) -> set:
-
-    #     return self.type, self.CONVENTIONS[self.type]
-    
 
     def convert(self,
                 convention: str) -> callable:
@@ -42,11 +36,16 @@ class Unit:
 
     def __validate__(self):
 
+
+        # set defaults
         for key, value in enumerate(self.DEFAULTS):
 
             if self.key is None:
                 self.__setattr__(key, value)
 
+        if self.convention not in list(self.CONVENTIONS):
+            raise ValueError("Convention not implemented.")
+        
     def __repr__(self):
 
         return f"{type(self).__name__}(\"{self.type}\")"
