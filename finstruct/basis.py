@@ -1,7 +1,10 @@
 from typing import Any
 
-#from finstruct.utils.checks import TYPECHECK
+import numpy as np
+
+from finstruct.utils.checks import TYPECHECK
 #from finstruct.driver import Driver
+from finstruct.unit import Unit
 
 
 class Basis:
@@ -14,34 +17,29 @@ class Basis:
                  *args) -> None:
         
         self.drivers = args
-        print("test")
 
         self.__validate__()
 
     def __validate__(self):
 
+        for driver in self.drivers: TYPECHECK(driver, Unit)
+
         return True
 
-
-    def __format__(self, format_spec: str) -> str:
-        return super().__format__(format_spec)
-    
     def __repr__(self):
         
-        #self.keys()
-        return "Basis([{}])".format([repr(driver) for driver in self.drivers])
+        return "Basis({})".format(*[repr(driver) for driver in self.drivers])
+    
+    @property
+    def dtypes(self):
 
-    def __str__(self):
-        pass
+        return np.dtype([(unit.name, unit.dtype) for unit in self.drivers])
+    
+    @property
+    def names(self):
+
+        return np.array([unit.name for unit in self.drivers])
 
 
-class TestClass:
 
-    def __init__(self, name):
 
-        self.name = name
-        self.test = 1
-
-test = Basis(TestClass("dim1"), TestClass("dim2"))
-#test = Basis()
-print(repr(test))

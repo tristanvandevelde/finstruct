@@ -8,56 +8,36 @@ import numpy.typing as npt
 from scipy.interpolate import RegularGridInterpolator
 
 from finstruct.unit import Unit
-
-
-"""
-Space - Basis
-Structure - Driver
-"""
-
-## TODO
-## Every unit can be used exactly once, or more?
+from finstruct.basis import Basis
+from finstruct.utils.checks import TYPECHECK
 
 
 
-# Space consist of 2/3 bases.
-
-
-class Basis:
+class Space:
 
     """
     The Space defines the dimensions and the units of structures.
     """
 
     def __init__(self,
-                 coords,
-                 vals):
+                 coords: Basis,
+                 vals: Basis):
         
         self.coords = coords
         self.vals = vals
 
-        self.validate()
+        self.__validate__()
 
-    def validate(self):
+    def __validate__(self):
 
         """
         Assert that coords and vals are both arrays containing units.
         """
 
-    @property
-    def dtype_coords(self):
+        TYPECHECK(self.coords, Basis)
+        TYPECHECK(self.vals, Basis)
 
-        return np.dtype([(unit.name, unit.dtype) for unit in self.coords])
-    
-    @property
-    def name_coords(self):
 
-        return np.array([unit.name for unit in self.coords])
-
-    @property
-    def dtype_vals(self):
-        
-        return np.dtype([(self.vals.name, self.vals.dtype)])
 
 
 class Structure:
@@ -67,18 +47,18 @@ class Structure:
     """
 
     DEFAULTS = {
-        "BASIS": None #Basis(Unit())
+        "space": None #Basis(Unit())
     }
 
     def __init__(self,
                  data_coords,
                  data_vals,
-                 basis: Basis,
+                 space: Space,
                  name: str = None) -> None:
         
 
         self.name = name
-        self.basis = basis
+        self.space = space
         
         self.coords = np.array(data_coords, dtype=self.basis.dtype_coords)
         self.values = np.array(data_vals, dtype=self.basis.dtype_vals)
@@ -86,13 +66,17 @@ class Structure:
 
         self.interpolate = False
 
-        self.validate()
+        self.__validate__()
 
-    def validate(self):
+    def __validate__(self):
 
         ## Set defaults if empty
-        if self.basis is None:
-            self.basis = self.DEFAULTS["BASIS"]
+        for attr in self.DEFAULTS:
+            if self.attr is None:
+                self.attr = self.DEFAULTS[attr]
+
+        # if self.space is None:
+        #     self.space = self.DEFAULTS["space"]
 
         ## Do checks
 
@@ -103,7 +87,9 @@ class Structure:
         # SIZECHECK dtypes & vals
 
         if self.interpolation:
-            pass
+            """
+            Perform interpolation on implied grid.
+            """
 
     def idx(self,
             **kwargs):
@@ -208,5 +194,3 @@ class Structure:
 
     #     return self.vals.shape[0]
     
-
-    ## Combining structures can also be generally implemented

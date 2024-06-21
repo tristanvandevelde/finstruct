@@ -49,7 +49,8 @@ class Unit:
 
     def __repr__(self):
 
-        return f"{type(self).__name__}({self.type})"
+        return f"{type(self).__name__}(\"{self.type}\")"
+    
 
 class DaycountUnit(Unit):
 
@@ -58,7 +59,7 @@ class DaycountUnit(Unit):
     It provides the measurements to calculate date differences under different conventions.
     """
 
-    name = "daycount"
+    name = "Daycount"
     dtype = None
 
     CONVENTIONS = (
@@ -120,7 +121,7 @@ class DaycountUnit(Unit):
 
 class TermUnit(Unit):
 
-    name = "term"
+    name = "Term"
     dtype = float
 
     CONVENTIONS = (
@@ -138,7 +139,7 @@ class TermUnit(Unit):
 
 class DateUnit(Unit):
 
-    name = "date"
+    name = "Date"
     dtype = "datetime64[D]"
 
     CONVENTIONS = [None]
