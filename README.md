@@ -22,3 +22,14 @@ This library does not have as goal to be a one-stop-shop for all financial analy
      -   [ ] Par
     
 - [ ] Implement framework for interpolation
+
+## Structure / Design
+
+```mermaid
+graph TD;
+    Unit-->Driver;
+    Interpolation-->Driver;
+    Driver-->Basis;
+    Basis-->Structure;
+    Driver-->Calendar;
+```
