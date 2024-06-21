@@ -69,27 +69,18 @@ class DaycountUnit(Unit):
         "ACT/ACT"
     )
 
-    def set(self,
-            convention: str) -> bool:
+    @property
+    def fractions(self):
 
-        super().set(convention)
-        [month, year] = convention.split("/")
+        month, year = self.convention.split("/")
 
-        try:
-            month = int(month)
-        except:
-            pass
-
-        try:
-            year = int(year)
-        except:
-            pass
-
-        self.fractions = {
+        fractions = {
             "day": 1,
             "month": month,
             "year": year
         }
+
+        return fractions
 
 
     def calc_daycount(self,
