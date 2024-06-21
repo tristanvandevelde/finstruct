@@ -23,7 +23,12 @@ This library does not have as goal to be a one-stop-shop for all financial analy
     
 - [ ] Implement framework for interpolation
 
-## Structure / Design
+## Questions
+
+A main one is how to decide on "static" features for structures.
+A possibility could also be to make it inherit from userdict, by using the dates as keys for example.
+
+## Design
 
 ```mermaid
 graph TD;
