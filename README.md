@@ -8,3 +8,17 @@ A diversity on operations is also implementede for the most frequently occuring 
 On the other hand, more specific convention-related objects are implemented as well. A major example of this is the Calendar, which can be used in the construction of Fixed Income instruments but is used in the bootstrapping of curves as well.
 
 This library does not have as goal to be a one-stop-shop for all financial analysis, but rather serves as a research environment in which to more easily conduct all the data manipulation and benchmarking required.
+
+
+## Timeline
+
+[ ] Curves
+    [ ] Basic Gridinterpolator
+    [ ] Implement Axis
+    [ ] Termunit and converting: how to store rates?
+        [ ] Spot
+        [ ] Discount
+        [ ] Forward
+        [ ] Par
+    
+[ ] Implement framework for interpolation

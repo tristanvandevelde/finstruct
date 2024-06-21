@@ -1,4 +1,7 @@
-import functools
+#import functools
+
+from typing import Any
+from collections import UserDict
 
 import numpy as np
 import numpy.typing as npt
@@ -14,6 +17,26 @@ Structure - Driver
 
 ## TODO
 ## Every unit can be used exactly once, or more?
+
+class Space(UserDict):
+
+    """
+    Alternative to basis.
+    """
+
+    # def __init__(self,
+    #              drivers: dict) -> None:
+        
+    #     """
+    #     Load in, and assert that all values are drivers.
+    #     """
+
+    def __setitem__(self, key: Any, value: Any) -> None:
+            
+        return super().__setitem__(key, value)
+
+
+
 
 class Basis:
 
@@ -52,7 +75,7 @@ class Basis:
         return np.dtype([(self.vals.name, self.vals.dtype)])
 
 
-class Driver:
+class Structure:
 
     """
     Structures are defined on spaces.
@@ -172,6 +195,11 @@ class Driver:
         interpolator = RegularGridInterpolator(coords_input, values_input, method="linear")
 
         return interpolator(coords)
+    
+    def _lincomb(self,
+                 scalar,
+                 other):
+        pass
     
     # def __get__(self,
     #             **kwargs):

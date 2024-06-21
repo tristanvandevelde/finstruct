@@ -4,11 +4,11 @@ import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
 
-from finstruct.structure import Basis, Driver
+from finstruct.structure import Basis, Structure
 from finstruct.unit import TermUnit, DateUnit, RateUnit
 
 
-class IRCurve(Driver):
+class IRCurve(Structure):
 
     DEFAULTS = { "BASIS": Basis([DateUnit(None), TermUnit("D")], RateUnit("SPOT"))}
            
@@ -45,8 +45,26 @@ class IRCurve(Driver):
         return disc_factors
     
     def plot(self,
-             date: np.datetime64):
+             type: str = None,
+             **kwargs):
         
+        """
+        
+        """
+
+        
+        match type:
+            case "history":
+                """
+                
+                """
+            case "termstructure":
+                """
+                Plot the relationship between the terms and the rates.
+        
+                """
+            ## TODO: Implement for multiple curves way to combine these.
+
         idx = self.idx(date=date)
         coords = self.coords[idx].view(np.float64)
         values = self.values[idx].view(np.float64)
@@ -55,7 +73,7 @@ class IRCurve(Driver):
         plt.show()
 
 
-class IRBaseCurve(Driver):
+class IRBaseCurve(Structure):
 
     """
     Interest rate Base Curve class to represt a termstructure at 1 moment in time.
@@ -89,3 +107,12 @@ class IRBaseCurve(Driver):
         rates = [row["rate"] for row in data]
 
         return cls(terms, rates, basis)
+    
+class IRMultiCurve:
+
+    """
+    Class to hold information about multiple curves.
+    Maybe should be in a general universe-type class, allowing combination of different drivers.
+    """
+
+    pass
