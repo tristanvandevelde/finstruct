@@ -30,6 +30,9 @@ graph TD;
     Unit-->Driver;
     Interpolation-->Driver;
     Driver-->Basis;
-    Basis-->Structure;
     Driver-->Calendar;
+    Basis-->Structure;
+    Structure-->Point;
+    Structure-->Curve;
+    Structure-->Surface;
 ```
