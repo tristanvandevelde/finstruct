@@ -35,6 +35,7 @@ graph TD;
     Interpolation-->Basis;
     Unit-->Calendar;
     Basis-->Structure;
+    Unit-->Structure;
     Structure-->Point;
     Structure-->Curve;
     Structure-->Surface;
