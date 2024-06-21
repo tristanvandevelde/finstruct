@@ -18,24 +18,9 @@ Structure - Driver
 ## TODO
 ## Every unit can be used exactly once, or more?
 
-class Space(UserDict):
-
-    """
-    Alternative to basis.
-    """
-
-    # def __init__(self,
-    #              drivers: dict) -> None:
-        
-    #     """
-    #     Load in, and assert that all values are drivers.
-    #     """
-
-    def __setitem__(self, key: Any, value: Any) -> None:
-            
-        return super().__setitem__(key, value)
 
 
+# Space consist of 2/3 bases.
 
 
 class Basis:

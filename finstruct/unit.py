@@ -29,22 +29,27 @@ class Unit:
         else:
             raise ValueError("Convention not implemented.")
         
-    @property
-    def convention(self) -> set:
+    # @property
+    # def convention(self) -> set:
 
-        return self.type, self.CONVENTIONS[self.type]
+    #     return self.type, self.CONVENTIONS[self.type]
+    
 
     def convert(self,
                 convention: str) -> callable:
         
         return True
 
-    def validate(self):
+    def __validate__(self):
 
         for key, value in enumerate(self.DEFAULTS):
 
             if self.key is None:
                 self.__setattr__(key, value)
+
+    def __repr__(self):
+
+        return f"{type(self).__name__}({self.type})"
 
 class DaycountUnit(Unit):
 

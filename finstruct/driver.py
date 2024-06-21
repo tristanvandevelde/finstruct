@@ -5,7 +5,7 @@ from collections import UserDict
 from finstruct.unit import Unit, TermUnit, DateUnit, DaycountUnit
 from finstruct.utils.checks import TYPECHECK
 
-class Axis:
+class Driver:
 
     """
     An axis, dimension or driver (final name to be decided) is a wrapper around a unit.
@@ -25,7 +25,8 @@ class Axis:
         Load in, and assert that all values are drivers.
         """
         
-        self.unit = self.utype(convention)
+        #self.unit = self.utype(convention)
+        self.unit = convention
         self.interpolation = False      # information about interpolation method
         self.defaults = None            # default values
 
@@ -33,10 +34,14 @@ class Axis:
     def name(self):
 
         return self.unit.name
+    
+    def __repr__(self) -> str:
+        
+        return f"{type(self).__name__}(test)"
 
 
 
-class TimeAxis(Axis):
+class TimeDriver(Driver):
 
     utype = [TermUnit, DateUnit]
 
@@ -49,10 +54,10 @@ class TimeAxis(Axis):
 
         super().__init__(unit=unit, dc_unit=dc_unit)
 
-class TermAxis(TimeAxis):
+class TermAxis(TimeDriver):
 
     utype = TermUnit
 
-class DateAxis(TimeAxis):
+class DateAxis(TimeDriver):
 
     utype = DateUnit
