@@ -79,7 +79,9 @@ class IRBaseCurve(Structure):
     Interest rate Base Curve class to represt a termstructure at 1 moment in time.
     """
 
-    DEFAULTS = { "BASIS": Basis([TermUnit("Y")], RateUnit("SPOT"))}
+    DEFAULTS = { 
+        "BASIS": Basis([TermUnit("Y")], RateUnit("SPOT"))
+    }
 
     def __init__(self,
                  terms,
