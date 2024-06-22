@@ -4,7 +4,9 @@ import calendar
 import numpy as np
 import numpy.typing as npt
 
-class Unit:
+from finstruct.utils.tools import Meta
+
+class Unit(metaclass=Meta):
 
     """
     Class to hold measurement units.
@@ -12,11 +14,12 @@ class Unit:
 
     name = None
     dtype = None
-    type = None
-    CONVENTIONS = ()
+
+    CONVENTIONS = []
+
     DEFAULTS = {
-        "convention": None,
-        "interpolation": False
+        "convention":       None,
+        "interpolation":    None
     }
 
     def __init__(self,
@@ -26,9 +29,6 @@ class Unit:
         self.convention = convention
         self.interpolation = interpolation
 
-
-        
-
     def convert(self,
                 convention: str) -> callable:
         
@@ -37,11 +37,7 @@ class Unit:
     def __validate__(self):
 
 
-        # set defaults
-        for key, value in enumerate(self.DEFAULTS):
-
-            if self.key is None:
-                self.__setattr__(key, value)
+        super().__validate__()
 
         if self.convention not in list(self.CONVENTIONS):
             raise ValueError("Convention not implemented.")
@@ -61,13 +57,18 @@ class DaycountUnit(Unit):
     name = "Daycount"
     dtype = None
 
-    CONVENTIONS = (
+    CONVENTIONS = [
         "30/360",
         "30/365",
         "ACT/360",
         "ACT/365",
         "ACT/ACT"
-    )
+    ]
+
+    DEFAULTS = {
+        "convention":       "30/360",
+        "interpolation":    None
+    }
 
     @property
     def fractions(self):
@@ -94,8 +95,6 @@ class DaycountUnit(Unit):
             start_date = get_date(start_date.astype("object"))
             end_date = get_date(end_date.astype("object"))
             diff = end_date - start_date
-            #days = int(np.sum(diff * list(self.fractions.values()), axis=1))
-            #print(diff)
             days = np.sum(diff * list(self.fractions.values()))
 
         return days
@@ -105,7 +104,7 @@ class DaycountUnit(Unit):
                           end_date: np.datetime64) -> float:
         
         if self.fractions["year"] == "ACT":
-            raise ValueError("Not implemented")
+            raise NotImplementedError
         else:
             return self.calc_daycount(start_date, end_date)/self.fractions["year"]
 
@@ -114,10 +113,10 @@ class TermUnit(Unit):
     name = "Term"
     dtype = float
 
-    CONVENTIONS = (
+    CONVENTIONS = [
         "D",        # daycount
         "Y"         # yearfraction
-    )
+    ]
 
     def __init__(self,
                  convention: str,
@@ -136,9 +135,10 @@ class DateUnit(Unit):
 
     def __init__(self,
                  convention: str,
+                 interpolation = None,
                  daycount: DaycountUnit = None) -> None:
         
-        super().__init__(convention)
+        super().__init__(convention, interpolation)
         self.daycount = daycount
 
     def to_numerical(value):

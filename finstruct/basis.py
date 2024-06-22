@@ -3,6 +3,7 @@ from typing import Any
 import numpy as np
 
 from finstruct.utils.checks import TYPECHECK
+from finstruct.utils.tools import Meta
 #from finstruct.driver import Driver
 from finstruct.unit import Unit
 
