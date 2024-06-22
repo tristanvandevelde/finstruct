@@ -41,4 +41,5 @@ graph TD;
     Structure-->Surface;
     Calendar-->Bootstrap;
     Bootstrap-->Curve;
+    Bootstrap-->Surface;
 ```
