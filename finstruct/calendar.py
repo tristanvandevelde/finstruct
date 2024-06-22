@@ -1,14 +1,17 @@
 import csv
 import datetime
-from finstruct.unit import DateUnit, TermUnit, DaycountUnit
+
 import numpy as np
 import numpy.typing as npt
+
+from finstruct.unit import DateUnit, TermUnit, DaycountUnit
+from finstruct.utils.checks import TYPECHECK
 
 
 class Calendar:
 
     """
-    A calendar defines the exchange of cashflows on certain times with certain probabilities.
+    A calendar defines the exchange of cashflows on predetermined times.
     """
 
     DEFAULTS = {}
@@ -17,16 +20,29 @@ class Calendar:
                  #data: npt.ArrayLike,   # list of dicts
                  dates: npt.ArrayLike,
                  values: npt.ArrayLike,
-                 dateunit: DateUnit = None):
+                 dateunit: DateUnit = DateUnit(None)) -> None:
 
         self.dateunit = dateunit
         dtypes = np.dtype([("date", self.dateunit.dtype), ("amount", "f4")])
         self.data = np.array(list(zip(dates, values)), dtype=dtypes)
 
+        self.__validate__()
+
+    def __validate__(self) -> None:
+
+        # Set defaults if empty
+        if self.dateunit is None:
+            self.dateunit = self.DEFAULTS["dateunit"]
+
+        # Check types
+
+        TYPECHECK(self.dateunit, DateUnit)
+        
+
     @classmethod
     def read_csv(cls,
                  file,
-                 dateunit):
+                 dateunit) -> None:
         
         """
         Create Calendar object from a .csv-file.
@@ -43,7 +59,7 @@ class Calendar:
 
     def get_npv(self,
                 eval_date,
-                curve = None):
+                curve = None) -> float:
 
         # get timedelta
         # get discount factor of timedelta
@@ -58,7 +74,8 @@ class Calendar:
         #self.dateunit.daycount.calc_daycount(eval_date, )
         return np.sum(PVs)
     
-    def get_rate(self,
-                 prices):
-  
-        pass
+    # def get_rate(self,
+    #              eval_date,
+    #              price = None) -> float:
+        
+    #     pass
