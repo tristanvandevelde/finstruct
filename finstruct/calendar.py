@@ -4,45 +4,57 @@ import datetime
 import numpy as np
 import numpy.typing as npt
 
-from finstruct.unit import DateUnit, TermUnit, DaycountUnit
 from finstruct.utils.checks import TYPECHECK
+from finstruct.utils.tools import Meta
+
+from finstruct.unit import DateUnit, MoneyUnit
 
 
-class Calendar:
 
+class Calendar(metaclass=Meta):
+
+    """Calendar class which defines the exchange of cashflows on predetermined times.
+
+    Attributes
+    ----------
+    dateunit: DateUnit
+        Dateunit configuring how the dates of the calendar are interpreted.
+    dtypes: np.dtype
+        Data types describing how the data is stored.
+    data: np.array
+        Structured numpy array containing the dates and cashflows.
     """
-    A calendar defines the exchange of cashflows on predetermined times.
-    """
 
-    DEFAULTS = {}
+    DEFAULTS = {
+        "dateunit": DateUnit("30/360")
+    }
 
     def __init__(self,
-                 #data: npt.ArrayLike,   # list of dicts
                  dates: npt.ArrayLike,
                  values: npt.ArrayLike,
-                 dateunit: DateUnit = DateUnit(None)) -> None:
+                 dateunit: DateUnit = None) -> None:
+        
+        """
+        Parameters
+        ----------
+        dates: npt.ArrayLike
+            Dates on which the exchanges happen.
+        values: npt.ArrayLike
+            Amounts of the exchanges
+        """
 
         self.dateunit = dateunit
-        dtypes = np.dtype([("date", self.dateunit.dtype), ("amount", "f4")])
-        self.data = np.array(list(zip(dates, values)), dtype=dtypes)
+        self.dtypes = np.dtype([(self.dateunit.name, self.dateunit.dtype), 
+                                ("Amount", float)])
+        self.data = np.array(list(zip(dates, values)), dtype=self.dtypes)
 
-        self.__validate__()
-
-    def __validate__(self) -> None:
-
-        # Set defaults if empty
-        if self.dateunit is None:
-            self.dateunit = self.DEFAULTS["dateunit"]
-
-        # Check types
-
-        TYPECHECK(self.dateunit, DateUnit)
+        #self.__validate__()
         
 
     @classmethod
     def read_csv(cls,
                  file,
-                 dateunit) -> None:
+                 dateunit = None) -> None:
         
         """
         Create Calendar object from a .csv-file.
@@ -56,26 +68,27 @@ class Calendar:
         values = [row["Cashflow"] for row in data]
         
         return cls(dates, values, dateunit=dateunit)
-
-    def get_npv(self,
-                eval_date,
-                curve = None) -> float:
-
-        # get timedelta
-        # get discount factor of timedelta
-        # multiply with cashflow
-
-        disc_factor = lambda x : 1/np.power(1.2, x)
-        #date = datetime.date(2000, 1, 1)
-        #eval_date = np.datetime64("2000-01-01", "D")
-        timediff = [self.dateunit.daycount.calc_yearfraction(eval_date, end_date) for end_date in self.data["date"]]
-        PVs = disc_factor(timediff) * self.data["amount"]
-        #print(self.dateunit.daycount.calc_daycount(eval_date, self.data["date"]))
-        #self.dateunit.daycount.calc_daycount(eval_date, )
-        return np.sum(PVs)
     
-    # def get_rate(self,
-    #              eval_date,
-    #              price = None) -> float:
-        
-    #     pass
+    @property
+    def dates(self):
+
+        return self.data[self.dateunit.name]
+
+    @property
+    def amounts(self):
+
+        return self.data["Amount"]
+    
+    # def daycount(self,
+    #              start_date: np.datetime64) -> np.array:
+
+    #     return np.array([self.dateunit.conventions[0].calc_daycount(start_date, date) for date in self.dates])
+
+    # def yearfraction(self,
+    #                  start_date: np.datetime64) -> np.array:
+
+    #     return np.array([self.dateunit.conventions[0].calc_yearfraction(start_date, date) for date in self.dates])
+
+
+
+    

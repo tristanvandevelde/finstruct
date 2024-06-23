@@ -28,6 +28,9 @@ class Convention(Enum):
     Helper class to store the different convention options used in units
     """
 
+    _ignore_ = ["_cname"]
+    _cname = None
+
     @classmethod
     def from_key(cls,
                  name):
@@ -58,6 +61,8 @@ class Convention(Enum):
         raise ValueError(f"{name} is not a valid {cls}")
 
 class DaycountConvention(Convention):
+
+    _cname = "Daycount"
 
     m_30_360 = (30, 360)
     m_30_365 = (30, 365)
@@ -118,17 +123,23 @@ class DaycountConvention(Convention):
     
 class TermConvention(Convention):
 
+    _cname = "Term"
+
     D = 0
     M = 1
     Y = 12
 
 class RateConvention(Convention):
 
+    _cname = "Rate"
+
     SPOT = auto()
     DISCOUNT = auto()
     FORWARD = auto()
 
 class CompoundingConvention(Convention):
+
+    _cname = "Compounding"
 
     SIMPLE = auto()
     LINEAR = auto()
@@ -178,8 +189,8 @@ class Unit:
 
         """
 
-        self.conventions = np.empty_like(self.ctypes)
         self.set_conventions(*args)
+        # super().__validate__()
 
     def __validate__(self):
 
@@ -195,17 +206,18 @@ class Unit:
     def set_conventions(self,
                         *args) -> None:
         
+        # LENCHECK
         if not len(args) == len(self.ctypes):
             raise ValueError("Conventions do not match this unit type.")
         
-        self.conventions = [ctype.from_key(convention) for convention, ctype in zip(args, self.ctypes)]
-        
+        self.conventions = {ctype._cname: ctype.from_key(convention) for convention, ctype in zip(args, self.ctypes)}
+
         self.__validate__()
 
     def convert(self,
                 *args) -> callable:
         
-        pass
+        return lambda x: x
 
     
 
@@ -247,8 +259,8 @@ class TermUnit(Unit):
     
     """
 
-    name = "Date"
-    dtype = "datetime64[D]"
+    name = "Term"
+    dtype = float
     ctypes = [TermConvention, DaycountConvention]
 
     def __init__(self,
@@ -315,3 +327,4 @@ class GenericUnit(Unit):
         
         self.ctypes = [type(arg) for arg in args]
         self.conventions = args
+
