@@ -8,6 +8,9 @@ from finstruct.unit import Unit
 
 """
 Driver([Basis], Projection)
+
+TODO:
+    - How to include interpolation?
 """
 
 class Driver:
@@ -25,7 +28,7 @@ class Driver:
 
     def __init__(self,
                  basis: list,
-                 projection) -> None:
+                 projection: Unit) -> None:
         
         """
         Example
