@@ -63,8 +63,7 @@ class DaycountUnit(Unit):
     ]
 
     DEFAULTS = {
-        "convention":       "30/360",
-        "interpolation":    None
+        "convention":       "30/360"
     }
 
     @property
@@ -132,10 +131,9 @@ class DateUnit(Unit):
 
     def __init__(self,
                  convention: str,
-                 interpolation = None,
                  daycount: DaycountUnit = None) -> None:
         
-        super().__init__(convention, interpolation)
+        super().__init__(convention)
         self.daycount = daycount
 
     def to_numerical(self,
