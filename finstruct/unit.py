@@ -19,20 +19,17 @@ class Unit(metaclass=Meta):
 
     DEFAULTS = {
         "convention":       None,
-        "interpolation":    None
     }
 
     def __init__(self,
-                 convention: str,
-                 interpolation = False) -> None:
+                 convention: str) -> None:
         
         self.convention = convention
-        self.interpolation = interpolation
 
     def convert(self,
                 convention: str) -> callable:
         
-        return True
+        return lambda x: x
 
     def __validate__(self):
 
@@ -141,7 +138,8 @@ class DateUnit(Unit):
         super().__init__(convention, interpolation)
         self.daycount = daycount
 
-    def to_numerical(value):
+    def to_numerical(self,
+                     value):
 
         """
         Returns a numerical value for the date to be used in calculations.
@@ -165,12 +163,13 @@ class RateUnit(Unit):
         "ZERO"
     )
 
-# class GenericUnit(Unit):
+    def convert(self,
+                convention: str) -> callable:
+        
+        """
+        Will also be used in Driver/Basis.
+        """
 
-#     name = None
-#     dtype = float
-
-#     CONVENTIONS = {None}
 
 # class MoneynessUnit(Unit):
 

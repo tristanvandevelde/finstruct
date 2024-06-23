@@ -17,7 +17,8 @@ class Meta(type):
                 if getattr(self, attribute) is None:
                     setattr(self, attribute, value)
                 # Check type
-                TYPECHECK(getattr(self, attribute), type(value))
+                if type(value) is not None:
+                    TYPECHECK(getattr(self, attribute), type(value))
 
         namespace = {
             **super().__prepare__(mcs, name, bases),
