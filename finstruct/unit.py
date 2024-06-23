@@ -206,8 +206,9 @@ class Unit:
 
     def __repr__(self):
 
-        settings = [f"{ctype}({convention.name})" for ctype, convention in self.conventions.items()]
-        return f"{self.__class__.__name__}({settings})"
+        conventions = [convention.name for convention in self.conventions.values()]
+        ## TODO: unpack conventions list
+        return f"{self.__class__.__name__}({conventions})"
 
 
     def set_conventions(self,
@@ -290,13 +291,16 @@ class RateUnit(Unit):
 
     name = "Rate"
     dtype = float
-    ctypes = [RateConvention, CompoundingConvention]
+    ctypes = [RateConvention, CompoundingConvention, TermConvention]
 
     def __init__(self,
-                 rateconvention,
-                 compoundingconvention):
+                 rateconvention: RateConvention,
+                 compoundingconvention: CompoundingConvention,
+                 termconvention: TermConvention = None,
+                 frequency: float = 1.0):
         
-        super().__init__(rateconvention, compoundingconvention)
+        super().__init__(rateconvention, compoundingconvention, termconvention)
+        self.frequency = frequency
 
 class CashUnit(Unit):
 

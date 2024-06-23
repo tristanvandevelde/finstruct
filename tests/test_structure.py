@@ -5,7 +5,7 @@ import numpy as np
 import pytest 
 
 from finstruct.unit import TermUnit, RateUnit, DateUnit
-from finstruct.structure import Structure, Basis
+#from finstruct.structure import Structure, Basis
 
 
 def test_structure():
