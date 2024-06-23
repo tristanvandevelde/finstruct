@@ -15,8 +15,11 @@ TODO:
         - Volatility unit
         - Moneyness unit
         - Money unit
+        - Rate unit
     Rateunit:
         - How to deal with frequency of compounding?
+    To implement:
+        - Conversion methods
 """
 
 class Convention(Enum):
@@ -29,14 +32,30 @@ class Convention(Enum):
     def from_key(cls,
                  name):
         
-        """
-        Generate a convention by its namestring.
+        """Generate a convention by its namestring.
+        
+
+        Parameters
+        ----------
+        name: str
+            Name of the convention to be set.
+
+        Returns
+        -------
+        conv: Convention
+            Created instance of the Convetion class.
+
+        Raises
+        ------
+        ValueError
+            If the name is not defined in the Convention.
         """
 
         for member in cls:
             if member.name == name:
                 return member
-        return ValueError(f"{name} is not a valid {cls}")
+            
+        raise ValueError(f"{name} is not a valid {cls}")
 
 class DaycountConvention(Convention):
 
@@ -70,6 +89,9 @@ class DaycountConvention(Convention):
     def calc_daycount(self,
                       start_date: np.datetime64,
                       end_date: np.datetime64) -> int:
+        
+        """Calculate the daycount between two dates.
+        """
          
         if self.fractions["month"] == "ACT":
             days = int(end_date - start_date)
@@ -86,6 +108,9 @@ class DaycountConvention(Convention):
                           start_date: np.datetime64,
                           end_date: np.datetime64) -> float:
         
+        """Calculate the yearfraction between two dates.
+        """
+        
         if self.fractions["year"] == "ACT":
             raise NotImplementedError
         else:
@@ -93,6 +118,7 @@ class DaycountConvention(Convention):
     
 class TermConvention(Convention):
 
+    D = 0
     M = 1
     Y = 12
 
@@ -112,6 +138,31 @@ class CompoundingConvention(Convention):
 
 
 class Unit:
+
+    """Class holding all measurement information about a variable.
+
+    The Unit class is a baseclass, from which other units such as TermUnits and DateUnits are defined.
+    It is defined by a number of conventions. Every type of Unit requires a different combination of conventions.
+
+    Parameters
+    ----------
+    *args : str
+        Arguments representing the (measurement) conventions to be configured.
+
+    Attributes
+    ----------
+    name : str
+        Name of the unit.
+    dtype : type
+        Data type in which the variable will be stored.
+    ctypes: list
+        List of the convention types which should be used to define the unit.
+
+    Note
+    ----
+    Ideally, the Unit should function as an Abstract Base Class and should not be used directly.
+
+    """
 
     name = None
     dtype = None
@@ -162,10 +213,7 @@ class DateUnit(Unit):
     name = "Date"
     dtype = "datetime64[D]"
     ctypes = [DaycountConvention]
-
-    # DEFAULTS = {
-    #     "convention": DaycountConvention.m_30_360
-    # }
+    DEFAULTS = {"conventions": [DaycountConvention.m_30_360]}
 
     def __init__(self,
                  daycountconvention) -> None:
@@ -173,15 +221,19 @@ class DateUnit(Unit):
         super().__init__(daycountconvention)
 
     def convert(self,
-                daycount) -> callable:
+                daycountconvention) -> callable:
         
-        pass
+        """No conversion function is necessary to convert dates themselves.
+        
+        """
+        
+        return lambda x: x
 
     def to_numerical(self,
                      value):
 
-        """
-        Returns a numerical value for the date to be used in calculations.
+        """Returns a numerical value for the date to be used in calculations.
+        
         More concretely, the date is converted to a timestamp.
         """
 
@@ -189,6 +241,10 @@ class DateUnit(Unit):
 
 
 class TermUnit(Unit):
+
+    """Unit describing termstructure.
+    
+    """
 
     name = "Date"
     dtype = "datetime64[D]"
@@ -204,7 +260,18 @@ class TermUnit(Unit):
                 termconvention,
                 daycountconvention) -> callable:
         
-        return None
+        termconvention_new = TermConvention.from_key(termconvention)
+        daycountconvention_new = DaycountConvention.from_key(daycountconvention)
+
+        if daycountconvention_new != self.conventions[1]:
+            raise NotImplementedError
+        
+        if termconvention_new != self.conventions[0]:
+            ## Change expression of term.
+
+            ## For example:
+            ## M -> Y = x/12
+            pass
     
 class RateUnit(Unit):
 
@@ -220,6 +287,21 @@ class RateUnit(Unit):
 
 class GenericUnit(Unit):
 
+    """Generic unit to be used in a general setting.
+
+    The generic units allows that the required conventions are determined directly from the constructor,
+    and thus do not need to be set before in the class definition.
+
+    Parameters
+    ----------
+    *args: Conventions
+        Instances of conventions to be loaded into the unit.
+
+    Notes
+    -----
+    For all other documentation, see the base Unit class.
+    """
+
     name = None
     dtype = None
     ctypes = []
@@ -227,9 +309,8 @@ class GenericUnit(Unit):
     def __init__(self,
                  *args) -> None:
         
+        """Create Generic Unit from instantiated Convention objects.
+        """
+        
         self.ctypes = [type(arg) for arg in args]
-        super().__init__(*args)
-
-
-
-
+        self.conventions = args
