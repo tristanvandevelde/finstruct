@@ -9,15 +9,16 @@ from finstruct.unit import DaycountConvention, TermConvention
 
 def test_daycountconvention():
     
+    convention = "30/360"
+    conv = DaycountConvention.from_key("30/360")
+    assert convention == conv.name
 
 
 def test_unit():
 
-    convention = "30/360"
-    conv = DaycountConvention.from_key("30/360")
-    #print(conv)
-    #print(conv.value)
-    assert convention == conv.name
+    dunit = DateUnit("30/360")
+    func = dunit.convert("30/365")
+    assert 1 == func(1)
 
 
 if __name__ == "__main__":

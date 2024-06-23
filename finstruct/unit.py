@@ -144,11 +144,6 @@ class Unit:
     The Unit class is a baseclass, from which other units such as TermUnits and DateUnits are defined.
     It is defined by a number of conventions. Every type of Unit requires a different combination of conventions.
 
-    Parameters
-    ----------
-    *args : str
-        Arguments representing the (measurement) conventions to be configured.
-
     Attributes
     ----------
     name : str
@@ -175,6 +170,12 @@ class Unit:
         
         """
         Set all conventions given by input arguments
+
+        Parameters
+        ----------
+        *args : str
+            Arguments representing the (measurement) conventions to be configured.
+
         """
 
         self.conventions = np.empty_like(self.ctypes)
@@ -292,11 +293,6 @@ class GenericUnit(Unit):
     The generic units allows that the required conventions are determined directly from the constructor,
     and thus do not need to be set before in the class definition.
 
-    Parameters
-    ----------
-    *args: Conventions
-        Instances of conventions to be loaded into the unit.
-
     Notes
     -----
     For all other documentation, see the base Unit class.
@@ -310,6 +306,11 @@ class GenericUnit(Unit):
                  *args) -> None:
         
         """Create Generic Unit from instantiated Convention objects.
+
+        Parameters
+        ----------
+        *args: Conventions
+            Instances of conventions to be loaded into the unit.
         """
         
         self.ctypes = [type(arg) for arg in args]
