@@ -32,7 +32,7 @@ A possibility could also be to make it inherit from userdict, by using the dates
 ```mermaid
 graph TD;
     Unit-->Basis;
-    Interpolation-->Basis;
+    Interpolation-->Structure;
     Unit-->Calendar;
     Basis-->Structure;
     Unit-->Structure;
