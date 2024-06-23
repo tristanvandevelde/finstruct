@@ -5,8 +5,8 @@ import datetime
 import numpy as np
 import pytest 
 
-from finstruct.unit import TermUnit, RateUnit, DateUnit, DaycountUnit
-from finstruct.calendar import Calendar
+#from finstruct.unit import TermUnit, RateUnit, DateUnit, DaycountUnit
+#from finstruct.calendar import Calendar
 
 
 def test_calendar():

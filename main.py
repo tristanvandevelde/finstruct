@@ -5,7 +5,7 @@
 # import datetime
 # import calendar
 
-# import numpy as np
+import numpy as np
 # import pandas as pd
 
 # from finstruct.unit import TermUnit, RateUnit, DateUnit, DaycountUnit
@@ -86,3 +86,9 @@ conv = DaycountConvention.from_key("30/360")
 print(conv)
 print(conv.name)
 print(conv.value)
+
+start_date = np.datetime64("2010-01-01")
+end_date = np.datetime64("2012-01-10")
+
+print(conv.fractions)
+print(conv.calc_daycount(start_date, end_date))

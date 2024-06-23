@@ -55,41 +55,41 @@ class DaycountConvention(Convention):
 
         return "/".join([str(x) for x in self.value])
     
-    # @property
-    # def fractions(self):
+    @property
+    def fractions(self):
 
-    #     month, year = self.value
-    #     fractions = {
-    #         "day": 1,
-    #         "month": month,
-    #         "year": year
-    #     }
+        month, year = self.value
+        fractions = {
+            "day": 1,
+            "month": month,
+            "year": year
+        }
 
-    #     return fractions
+        return fractions
 
-    # def calc_daycount(self,
-    #                   start_date: np.datetime64,
-    #                   end_date: np.datetime64) -> int:
+    def calc_daycount(self,
+                      start_date: np.datetime64,
+                      end_date: np.datetime64) -> int:
          
-    #     if self.fractions["month"] == "ACT":
-    #         days = int(end_date - start_date)
-    #     else:
-    #         get_date = lambda x: np.array([x.day, x.month, x.year])
-    #         start_date = get_date(start_date.astype("object"))
-    #         end_date = get_date(end_date.astype("object"))
-    #         diff = end_date - start_date
-    #         days = np.sum(diff * list(self.fractions.values()))
+        if self.fractions["month"] == "ACT":
+            days = int(end_date - start_date)
+        else:
+            get_date = lambda x: np.array([x.day, x.month, x.year])
+            start_date = get_date(start_date.astype("object"))
+            end_date = get_date(end_date.astype("object"))
+            diff = end_date - start_date
+            days = np.sum(diff * list(self.fractions.values()))
 
-    #     return days
+        return days
 
-    # def calc_yearfraction(self,
-    #                       start_date: np.datetime64,
-    #                       end_date: np.datetime64) -> float:
+    def calc_yearfraction(self,
+                          start_date: np.datetime64,
+                          end_date: np.datetime64) -> float:
         
-    #     if self.fractions["year"] == "ACT":
-    #         raise NotImplementedError
-    #     else:
-    #         return self.calc_daycount(start_date, end_date)/self.fractions["year"]
+        if self.fractions["year"] == "ACT":
+            raise NotImplementedError
+        else:
+            return self.calc_daycount(start_date, end_date)/self.fractions["year"]
     
 class TermConvention(Convention):
 
