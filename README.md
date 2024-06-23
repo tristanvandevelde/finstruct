@@ -31,11 +31,9 @@ A possibility could also be to make it inherit from userdict, by using the dates
 
 ```mermaid
 graph TD;
-    Unit-->Basis;
-    Interpolation-->Structure;
-    Unit-->Calendar;
-    Basis-->Structure;
-    Unit-->Structure;
+    Unit-->Driver;
+    Driver-->Calendar;
+    Driver-->Structure;
     Structure-->Point;
     Structure-->Curve;
     Structure-->Surface;
