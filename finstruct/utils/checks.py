@@ -1,5 +1,5 @@
 def TYPECHECK(item,
-              required_type) -> bool:
+              required_type) -> None:
     
     # TODO: Extend to list of allowed types
 
@@ -8,6 +8,13 @@ def TYPECHECK(item,
     
     return True
 
+
+def LENCHECK(item1,
+             item2) -> None:
+    
+    if not (len(item1) == len(item2)):
+        raise ValueError(f"Wrong lengths. {item1} should be of length {item2}")
+    
 
 def SIZECHECK(item):
 

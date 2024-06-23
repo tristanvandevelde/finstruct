@@ -4,10 +4,10 @@ import datetime
 import numpy as np
 import numpy.typing as npt
 
-from finstruct.utils.checks import TYPECHECK
+from finstruct.utils.checks import TYPECHECK, LENCHECK
 from finstruct.utils.tools import Meta
 
-from finstruct.unit import DateUnit, MoneyUnit
+from finstruct.unit import DateUnit, CashUnit
 
 
 
@@ -26,13 +26,15 @@ class Calendar(metaclass=Meta):
     """
 
     DEFAULTS = {
-        "dateunit": DateUnit("30/360")
+        "dateunit": DateUnit("30/360"),
+        "cashunit": CashUnit("EUR")
     }
 
     def __init__(self,
                  dates: npt.ArrayLike,
                  values: npt.ArrayLike,
-                 dateunit: DateUnit = None) -> None:
+                 dateunit: DateUnit = None,
+                 cashunit: CashUnit = None) -> None:
         
         """
         Parameters
@@ -44,20 +46,29 @@ class Calendar(metaclass=Meta):
         """
 
         self.dateunit = dateunit
+        self.cashunit = cashunit
+        LENCHECK(dateunit, cashunit)
         self.dtypes = np.dtype([(self.dateunit.name, self.dateunit.dtype), 
-                                ("Amount", float)])
-        self.data = np.array(list(zip(dates, values)), dtype=self.dtypes)
-
-        #self.__validate__()
-        
+                                (self.cashunit.name, self.cashunit.dtype)])
+        self.data = np.array(list(zip(dates, values)), dtype=self.dtypes)        
 
     @classmethod
     def read_csv(cls,
                  file,
                  dateunit = None) -> None:
         
-        """
-        Create Calendar object from a .csv-file.
+        """Create Calendar object from a .csv-file.
+
+        Parameters
+        ----------
+        file: str
+            Location of the .csv-file.
+        dateunit: DateUnit (optional)
+            DateUnit to be used in the Calendar.
+
+        Notes
+        -----
+        The .csv-file is expected to have the following headers: Date, Cashflow.
         """
         
         with open(file=file, mode="r", encoding="utf-8-sig") as csvfile:
@@ -72,22 +83,34 @@ class Calendar(metaclass=Meta):
     @property
     def dates(self):
 
+        """Return the dates of the calendar.
+        """
+
         return self.data[self.dateunit.name]
 
     @property
     def amounts(self):
 
-        return self.data["Amount"]
+        """Return the amounts of the calendar.
+        """
+
+        return self.data[self.cashunit.name]
     
-    # def daycount(self,
-    #              start_date: np.datetime64) -> np.array:
+    def daycount(self,
+                 start_date: np.datetime64) -> np.array:
+        
+        """Calculate the daycount array for a given starting date.
+        """
 
-    #     return np.array([self.dateunit.conventions[0].calc_daycount(start_date, date) for date in self.dates])
+        return np.array([self.dateunit.conventions["DaycountConvention"].calc_daycount(start_date, date) for date in self.dates])
 
-    # def yearfraction(self,
-    #                  start_date: np.datetime64) -> np.array:
+    def yearfraction(self,
+                     start_date: np.datetime64) -> np.array:
+        
+        """Calculate the yearfraction array for a given starting date.
+        """
 
-    #     return np.array([self.dateunit.conventions[0].calc_yearfraction(start_date, date) for date in self.dates])
+        return np.array([self.dateunit.conventions["DaycountConvention"].calc_yearfraction(start_date, date) for date in self.dates])
 
 
 

@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 from finstruct.utils.tools import Meta
-from finstruct.utils.checks import TYPECHECK
+from finstruct.utils.checks import TYPECHECK, LENCHECK
 
 """
 TODO:
@@ -24,12 +24,18 @@ TODO:
 
 class Convention(Enum):
 
-    """
-    Helper class to store the different convention options used in units
-    """
+    """Helper class to store the different convention options used in Units.
 
-    _ignore_ = ["_cname"]
-    _cname = None
+    Attributes
+    ----------
+    - cname: str
+        Name of the convention type.
+    - name: str
+        Name of the convention.
+    - value: Any
+        Representation of the convention.
+
+    """
 
     @classmethod
     def from_key(cls,
@@ -123,15 +129,11 @@ class DaycountConvention(Convention):
     
 class TermConvention(Convention):
 
-    _cname = "Term"
-
     D = 0
     M = 1
     Y = 12
 
 class RateConvention(Convention):
-
-    _cname = "Rate"
 
     SPOT = auto()
     DISCOUNT = auto()
@@ -139,12 +141,14 @@ class RateConvention(Convention):
 
 class CompoundingConvention(Convention):
 
-    _cname = "Compounding"
-
     SIMPLE = auto()
     LINEAR = auto()
     CONTINUOUS = auto()
 
+class CashConvention(Convention):
+
+    EUR = auto()
+    USD = auto()
 
 
 
@@ -196,21 +200,23 @@ class Unit:
 
         # super().__validate__()
 
-        for convention, ctype in zip(self.conventions, self.ctypes):
-            TYPECHECK(convention, ctype)
+        # for convention, ctype in zip(self.conventions.items(), self.ctypes):
+        #     TYPECHECK(convention, ctype)
+        pass
 
     def __repr__(self):
 
-        return f"{self.__class__}({[convention.name for convention in self.conventions]})"
+        settings = [f"{ctype}({convention.name})" for ctype, convention in self.conventions.items()]
+        return f"{self.__class__.__name__}({settings})"
+
 
     def set_conventions(self,
                         *args) -> None:
         
         # LENCHECK
-        if not len(args) == len(self.ctypes):
-            raise ValueError("Conventions do not match this unit type.")
-        
-        self.conventions = {ctype._cname: ctype.from_key(convention) for convention, ctype in zip(args, self.ctypes)}
+        LENCHECK(args, self.ctypes)
+
+        self.conventions = {ctype.__name__: ctype.from_key(convention) for convention, ctype in zip(args, self.ctypes)}
 
         self.__validate__()
 
@@ -232,15 +238,6 @@ class DateUnit(Unit):
                  daycountconvention) -> None:
         
         super().__init__(daycountconvention)
-
-    def convert(self,
-                daycountconvention) -> callable:
-        
-        """No conversion function is necessary to convert dates themselves.
-        
-        """
-        
-        return lambda x: x
 
     def to_numerical(self,
                      value):
@@ -283,10 +280,13 @@ class TermUnit(Unit):
             ## Change expression of term.
 
             ## For example:
-            ## M -> Y = x/12
+            ## M -> Y x = x/12
             pass
     
 class RateUnit(Unit):
+
+    """Unit describing information expressed in (interest) rates.
+    """
 
     name = "Rate"
     dtype = float
@@ -297,6 +297,21 @@ class RateUnit(Unit):
                  compoundingconvention):
         
         super().__init__(rateconvention, compoundingconvention)
+
+class CashUnit(Unit):
+
+    """Unit to display information expressed in cash exchanges (such as for example price).
+    """
+
+    name = "Cash"
+    dtype = float
+    ctypes = [CashConvention]
+
+    def __init__(self,
+                 cashconvention):
+        
+        super().__init__(cashconvention)
+
 
 class GenericUnit(Unit):
 
