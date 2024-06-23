@@ -38,7 +38,6 @@ graph TD;
     Structure-->Surface;
     Structure-->Point;
     Calendar-->Bootstrap;
-    Model-->Bootstrap;
     Bootstrap-->Curve;
     Curve-->Bootstrap;
     Bootstrap-->Surface;
