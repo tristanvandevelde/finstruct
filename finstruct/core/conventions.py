@@ -67,9 +67,28 @@ class Convention(Enum):
             
         raise ValueError(f"{name} is not a valid {cls}")
 
+    def convert(self,
+                new_convention):
+        
+        raise NotImplementedError
+  
+
+
+
 class DaycountConvention(Convention):
 
-    _cname = "Daycount"
+    """Class to store implementations of Daycount Conventions.
+
+    Attributes
+    ----------
+    - cname: str
+        Name of the convention type.
+    - name: str
+        Name of the convention.
+    - value: Any
+        Representation of the convention.
+
+    """
 
     m_30_360 = (30, 360)
     m_30_365 = (30, 365)
@@ -128,11 +147,23 @@ class DaycountConvention(Convention):
         else:
             return self.calc_daycount(start_date, end_date)/self.fractions["year"]
     
+
 class TermConvention(Convention):
 
-    D = 0
     M = 1
     Y = 12
+    # D is not implemented as it would depend on the Daycount and is tricky for ACTs.
+
+    def convert(self,
+                convention) -> callable:
+        
+        """Convert between possible Termconventions.
+
+        M->Y: convert(value) = value * 12
+        Y->M: convert(value) = value / 12
+        """
+        
+        return lambda val: val * (convention.value / self.value)
 
 class RateConvention(Convention):
 
@@ -146,6 +177,33 @@ class CompoundingConvention(Convention):
     LINEAR = auto()
     CONTINUOUS = auto()
 
+    def compound(self,
+                 nominalrate,
+                 time):
+        
+        """
+        Calculate compounding of a certain rate over timeperiods.
+        """
+        
+        match self.name:
+            case "SIMPLE":
+                pass
+            case "LINEAR":
+                pass
+            case "CONTINUOUS":
+                return np.exp(nominalrate * time)
+            
+    def equivalent(self):
+
+        """ Calculate annual equivalent rate.
+        """
+
+        pass
+
+    def convert(self):
+
+        pass
+
 
 class CashConvention(Convention):
 
@@ -157,3 +215,16 @@ class CurrencyConvention(Convention):
     EUR = auto()
     USD = auto()
 
+class VolatilityConvention(Convention):
+
+    BLACKSCHOLES = auto()
+    BLACK = auto()
+
+class GreekConvention(Convention):
+
+    DELTA = auto()
+
+class MoneynessConvention(Convention):
+
+    PRICE = auto()
+    DELTA = auto()

@@ -5,7 +5,7 @@ import numpy as np
 import pytest 
 
 from finstruct.core.unit import DateUnit, TermUnit
-from finstruct.core.unit import DaycountConvention, TermConvention
+from finstruct.core.conventions import DaycountConvention, TermConvention
 
 def test_daycountconvention():
 
