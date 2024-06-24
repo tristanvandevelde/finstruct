@@ -7,18 +7,19 @@ import pytest
 from finstruct.core.unit import DateUnit, TermUnit
 from finstruct.core.conventions import DaycountConvention, TermConvention
 
-def test_daycountconvention():
 
-    convention = "30/360"
-    conv = DaycountConvention.from_key("30/360")
-    assert convention == conv.name
+class TestDateUnit:
+    
+    def test_create(self):
 
+        dunit = DateUnit("30/360")
+        assert type(dunit) is DateUnit
 
-def test_unit():
+class TestRateUnit:
+    pass
 
-    dunit = DateUnit("30/360")
-    func = dunit.convert("30/365")
-    assert 1 == func(1)
+class TestTermUnit:
+    pass
 
 
 

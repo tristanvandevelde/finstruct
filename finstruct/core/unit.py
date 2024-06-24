@@ -8,7 +8,7 @@ import numpy.typing as npt
 
 from finstruct.utils.tools import Meta
 from finstruct.utils.checks import TYPECHECK, LENCHECK
-from finstruct.core.conventions import TermConvention, DaycountConvention, RateConvention, CompoundingConvention
+from finstruct.core.conventions import TermConvention, DaycountConvention, RateConvention, CompoundingConvention, CashConvention
 
 """
 TODO:
