@@ -4,7 +4,7 @@ import numpy as np
 
 from finstruct.utils.checks import TYPECHECK
 from finstruct.utils.tools import Meta
-from finstruct.unit import Unit
+from finstruct.core.unit import Unit
 
 """
 Driver([Basis], Projection)
