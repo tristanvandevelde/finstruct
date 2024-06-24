@@ -9,7 +9,9 @@ from finstruct.utils.tools import Meta
 
 from finstruct.unit import DateUnit, CashUnit
 
-
+"""
+TODO: Use config files to complement .csv files.
+"""
 
 class Calendar(metaclass=Meta):
 
