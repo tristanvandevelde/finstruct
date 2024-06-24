@@ -146,9 +146,14 @@ class CompoundingConvention(Convention):
     LINEAR = auto()
     CONTINUOUS = auto()
 
+
 class CashConvention(Convention):
+
+    PV = auto()
+    CV = auto()
+
+class CurrencyConvention(Convention):
 
     EUR = auto()
     USD = auto()
-
 
