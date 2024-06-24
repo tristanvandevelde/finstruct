@@ -4,8 +4,8 @@ sys.path.append(os.getcwd())
 import numpy as np
 import pytest 
 
-from finstruct.unit import DateUnit, TermUnit
-from finstruct.unit import DaycountConvention, TermConvention
+from finstruct.core.unit import DateUnit, TermUnit
+from finstruct.core.unit import DaycountConvention, TermConvention
 
 def test_daycountconvention():
 
