@@ -4,8 +4,8 @@ sys.path.append(os.getcwd())
 import numpy as np
 import pytest 
 
-from finstruct.unit import Unit, TermUnit, RateUnit, DateUnit
-from finstruct.driver import Driver
+from finstruct.core.unit import Unit, TermUnit, RateUnit, DateUnit
+from finstruct.core.driver import Driver
 from finstruct.utils.checks import TYPECHECK
 
 
