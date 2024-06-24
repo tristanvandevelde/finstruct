@@ -47,6 +47,10 @@ class Calendar(metaclass=Meta):
             Amounts of the exchanges
         """
 
+        self.name = None
+        self.date = None
+        self.driver = None
+
         self.dateunit = dateunit
         self.cashunit = cashunit
         LENCHECK(dateunit, cashunit)
