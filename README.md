@@ -34,10 +34,4 @@ graph TD;
     Unit-->Driver;
     Driver-->Calendar;
     Driver-->Structure;
-    Structure-->Curve;
-    Structure-->Surface;
-    Structure-->Point;
-    Calendar-->Bootstrap;
-    Bootstrap-->Curve;
-    Bootstrap-->Surface;
 ```
