@@ -1,128 +1,128 @@
-import csv
+# import csv
 
-import numpy as np
-import numpy.typing as npt
-import matplotlib.pyplot as plt
+# import numpy as np
+# import numpy.typing as npt
+# import matplotlib.pyplot as plt
 
-from finstruct.structure import Basis, Structure
-from finstruct.unit import TermUnit, DateUnit, RateUnit
+# from finstruct.strstructure import Basis, Structure
+# from finstruct.unit import TermUnit, DateUnit, RateUnit
 
 
-class IRCurve(Structure):
+# class IRCurve(Structure):
 
-    DEFAULTS = { "BASIS": Basis([DateUnit(None), TermUnit("D")], RateUnit("SPOT"))}
+#     DEFAULTS = { "BASIS": Basis([DateUnit(None), TermUnit("D")], RateUnit("SPOT"))}
            
 
-    def __init__(self,
-                 coords,
-                 data,
-                 basis: Basis = None):
+#     def __init__(self,
+#                  coords,
+#                  data,
+#                  basis: Basis = None):
         
-        super().__init__(coords, data, basis)
+#         super().__init__(coords, data, basis)
 
-    def get_fwd(self,
-                terms: npt.ArrayLike,
-                dates: npt.ArrayLike):
+#     def get_fwd(self,
+#                 terms: npt.ArrayLike,
+#                 dates: npt.ArrayLike):
         
-        """
-        Given two moments a and b, with b<a, the forward rate is calculated as:
-        ((1 + ra)^ta / (1 + rb)^tb) - 1
-        """
+#         """
+#         Given two moments a and b, with b<a, the forward rate is calculated as:
+#         ((1 + ra)^ta / (1 + rb)^tb) - 1
+#         """
 
-        return None
+#         return None
     
-    def get_disc(self,
-                 terms: npt.ArrayLike,
-                 dates: npt.ArrayLike):
+#     def get_disc(self,
+#                  terms: npt.ArrayLike,
+#                  dates: npt.ArrayLike):
         
-        """
-        Returns the discount factors for given term points.
-        """
+#         """
+#         Returns the discount factors for given term points.
+#         """
         
-        spot_rates = self.get_values(terms=terms)
-        disc_factors = 1/np.power(1 + spot_rates, terms)
+#         spot_rates = self.get_values(terms=terms)
+#         disc_factors = 1/np.power(1 + spot_rates, terms)
 
-        return disc_factors
+#         return disc_factors
     
-    def plot(self,
-             type: str = None,
-             **kwargs):
+#     def plot(self,
+#              type: str = None,
+#              **kwargs):
         
-        """
+#         """
         
-        """
+#         """
 
         
-        match type:
-            case "history":
-                """
+#         match type:
+#             case "history":
+#                 """
                 
-                """
-            case "termstructure":
-                """
-                Plot the relationship between the terms and the rates.
+#                 """
+#             case "termstructure":
+#                 """
+#                 Plot the relationship between the terms and the rates.
         
-                """
-            ## TODO: Implement for multiple curves way to combine these.
+#                 """
+#             ## TODO: Implement for multiple curves way to combine these.
 
-        idx = self.idx(**kwargs)
-        coords = self.coords[idx].view(np.float64)
-        values = self.values[idx].view(np.float64)
+#         idx = self.idx(**kwargs)
+#         coords = self.coords[idx].view(np.float64)
+#         values = self.values[idx].view(np.float64)
 
-        plt.plot(coords, values)
-        plt.show()
+#         plt.plot(coords, values)
+#         plt.show()
 
 
-class IRBaseCurve(Structure):
+# class IRBaseCurve(Structure):
 
-    """
-    Interest rate Base Curve class to represt a termstructure at 1 moment in time.
-    """
+#     """
+#     Interest rate Base Curve class to represt a termstructure at 1 moment in time.
+#     """
 
-    DEFAULTS = { 
-        "BASIS": Basis([TermUnit("Y")], RateUnit("SPOT"))
-    }
+#     DEFAULTS = { 
+#         "BASIS": Basis([TermUnit("Y")], RateUnit("SPOT"))
+#     }
 
-    def __init__(self,
-                 terms,
-                 rates,
-                 basis = None):
+#     def __init__(self,
+#                  terms,
+#                  rates,
+#                  basis = None):
         
-        if basis is None:
-            basis = self.DEFAULTS["BASIS"]
+#         if basis is None:
+#             basis = self.DEFAULTS["BASIS"]
         
-        super().__init__(terms, rates, basis)
+#         super().__init__(terms, rates, basis)
 
-    def shift(self):
-        pass
+#     def shift(self):
+#         pass
 
-    @classmethod
-    def read_csv(cls,
-                 file,
-                 basis = None):
+#     @classmethod
+#     def read_csv(cls,
+#                  file,
+#                  basis = None):
         
-        with open(file=file, mode="r", encoding="utf-8-sig") as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=",")
-            data = list(reader)
+#         with open(file=file, mode="r", encoding="utf-8-sig") as csvfile:
+#             reader = csv.DictReader(csvfile, delimiter=",")
+#             data = list(reader)
 
-        terms = [row["term"] for row in data]
-        rates = [row["rate"] for row in data]
+#         terms = [row["term"] for row in data]
+#         rates = [row["rate"] for row in data]
 
-        return cls(terms, rates, basis)
+#         return cls(terms, rates, basis)
     
-class IRMultiCurve:
+# class IRMultiCurve:
 
-    """
-    Class to hold information about multiple curves.
-    Maybe should be in a general universe-type class, allowing combination of different drivers.
-    """
+#     """
+#     Class to hold information about multiple curves.
+#     Maybe should be in a general universe-type class, allowing combination of different drivers.
+#     """
 
-    pass
+#     pass
 
-class Movement:
+# class Movement:
 
-    pass
+#     pass
 
-class Shift(Movement):
+# class Shift(Movement):
 
-    pass
+#     pass

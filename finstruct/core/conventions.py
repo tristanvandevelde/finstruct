@@ -1,7 +1,6 @@
 """CONVENTIONS MODULE
 """
 
-import calendar 
 from enum import Enum, auto
 from types import DynamicClassAttribute
 

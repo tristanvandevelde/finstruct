@@ -5,15 +5,17 @@ import numpy as np
 import numpy.typing as npt
 
 from finstruct.utils.checks import TYPECHECK, LENCHECK
-from finstruct.utils.tools import Meta
+from finstruct.utils.types import Meta
 
-from finstruct.unit import DateUnit, CashUnit
+from finstruct.core.unit import DateUnit, CashUnit
+from finstruct.core.driver import Driver
+from finstruct.structures.structure import Structure
 
 """
 TODO: Use config files to complement .csv files.
 """
 
-class Calendar(metaclass=Meta):
+class Calendar:
 
     """Calendar class which defines the exchange of cashflows on predetermined times.
 
@@ -28,15 +30,13 @@ class Calendar(metaclass=Meta):
     """
 
     DEFAULTS = {
-        "dateunit": DateUnit("30/360"),
-        "cashunit": CashUnit("EUR")
+        "driver": Driver([DateUnit("30/360")],[CashUnit("EUR")])
     }
 
     def __init__(self,
                  dates: npt.ArrayLike,
                  values: npt.ArrayLike,
-                 dateunit: DateUnit = None,
-                 cashunit: CashUnit = None) -> None:
+                 driver: Driver = None) -> None:
         
         """
         Parameters
@@ -51,12 +51,9 @@ class Calendar(metaclass=Meta):
         self.date = None
         self.driver = None
 
-        self.dateunit = dateunit
-        self.cashunit = cashunit
-        LENCHECK(dateunit, cashunit)
-        self.dtypes = np.dtype([(self.dateunit.name, self.dateunit.dtype), 
-                                (self.cashunit.name, self.cashunit.dtype)])
-        self.data = np.array(list(zip(dates, values)), dtype=self.dtypes)        
+        # self.dtypes = np.dtype([(self.dateunit.name, self.dateunit.dtype), 
+        #                         (self.cashunit.name, self.cashunit.dtype)])
+        # self.data = np.array(list(zip(dates, values)), dtype=self.dtypes)        
 
     @classmethod
     def read_csv(cls,

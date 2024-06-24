@@ -6,7 +6,7 @@ from types import DynamicClassAttribute
 import numpy as np
 import numpy.typing as npt
 
-from finstruct.utils.tools import Meta
+from finstruct.utils.types import Meta
 from finstruct.utils.checks import TYPECHECK, LENCHECK
 from finstruct.core.conventions import TermConvention, DaycountConvention, RateConvention, CompoundingConvention, CashConvention
 

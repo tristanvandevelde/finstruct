@@ -5,91 +5,68 @@
 
 # import numpy as np
 # import numpy.typing as npt
-# from scipy.interpolate import RegularGridInterpolator
 
 # from finstruct.unit import Unit
 # from finstruct.basis import Basis
 # from finstruct.utils.checks import TYPECHECK
 
+import numpy as np
+from scipy.interpolate import RegularGridInterpolator
 
+from finstruct.core.driver import Driver
 
-# class Space:
+class Structure:
 
-#     """
-#     The Space defines the dimensions and the units of structures.
-#     """
+    DEFAULTS = {}
 
-#     def __init__(self,
-#                  coords: Basis,
-#                  vals: Basis):
+    __interpolate__ = []
+
+    def __init__(self,
+                 data_coords,
+                 data_vals,
+                 driver: Driver,
+                 name: str = None) -> None:
         
-#         self.coords = coords
-#         self.vals = vals
+        self.name = name
+        self.driver = driver
+        
+        self.coords = np.array(data_coords, dtype=self.driver.basis["dtypes"])
+        self.values = np.array(data_vals, dtype=self.driver.procetion["dtypes"])
+        self.interpolation = RegularGridInterpolator
 
-#         self.__validate__()
+        self.__validate__()
 
-#     def __validate__(self):
+    def __validate__(self):
 
-#         """
-#         Assert that coords and vals are both arrays containing units.
-#         """
+        pass
 
-#         TYPECHECK(self.coords, Basis)
-#         TYPECHECK(self.vals, Basis)
+    def interpolate(self,
+                    coords):
+        
+        pass
 
+    def create_grid(self,
+                    *args):
+        
+        pass
 
+    def idx(self,
+            **kwargs):
+        
+        pass
 
+    def filter(self,
+               **kwargs):
+        
+        pass
+
+    def get_values(self,
+                   **kwargs):
+        
+        pass
 
 # class Structure:
 
-#     """
-#     Structures are defined on spaces.
-#     """
-
-#     DEFAULTS = {
-#         "space": None #Basis(Unit())
-#     }
-
-#     def __init__(self,
-#                  data_coords,
-#                  data_vals,
-#                  space: Space,
-#                  name: str = None) -> None:
-        
-
-#         self.name = name
-#         self.space = space
-        
-#         self.coords = np.array(data_coords, dtype=self.basis.dtype_coords)
-#         self.values = np.array(data_vals, dtype=self.basis.dtype_vals)
-#         self.interpolation = RegularGridInterpolator
-
-#         self.interpolate = False
-
-#         self.__validate__()
-
-#     def __validate__(self):
-
-#         ## Set defaults if empty
-#         for attr in self.DEFAULTS:
-#             if self.attr is None:
-#                 self.attr = self.DEFAULTS[attr]
-
-#         # if self.space is None:
-#         #     self.space = self.DEFAULTS["space"]
-
-#         ## Do checks
-
-#         #TYPECHECK(self.basis, Space)
-#         #SIZECHECK(self.coords, self.vals)
-
-#         # SIZECHECK dtypes & coords
-#         # SIZECHECK dtypes & vals
-
-#         if self.interpolation:
-#             """
-#             Perform interpolation on implied grid.
-#             """
 
 #     def idx(self,
 #             **kwargs):
