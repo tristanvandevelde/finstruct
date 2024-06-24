@@ -39,6 +39,5 @@ graph TD;
     Structure-->Point;
     Calendar-->Bootstrap;
     Bootstrap-->Curve;
-    Curve-->Bootstrap;
     Bootstrap-->Surface;
 ```
