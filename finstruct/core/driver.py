@@ -10,7 +10,7 @@ from finstruct.core.unit import Unit
 Driver([Basis], Projection)
 
 TODO:
-    - How to include interpolation?
+    - Representation in config files.
 """
 
 class Driver:
