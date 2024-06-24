@@ -14,12 +14,6 @@ This library does not have as goal to be a one-stop-shop for all financial analy
 
 - [ ] Curves
   -  [ ] Basic Gridinterpolator
-  -  [ ] Implement Axis
-  -  [ ] Termunit and converting: how to store rates?
-     -   [ ] Spot
-     -   [ ] Discount
-     -   [ ] Forward
-     -   [ ] Par
 - [ ] Implement framework for interpolation
 
 ## Questions
@@ -31,7 +25,6 @@ A possibility could also be to make it inherit from userdict, by using the dates
 
 ```mermaid
 graph TD;
-    Convention-->Unit;
     Unit-->Driver;
     Driver-->Calendar;
     Driver-->Structure;
