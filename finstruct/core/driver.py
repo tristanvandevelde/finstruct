@@ -3,9 +3,9 @@ from itertools import chain, combinations
 
 import numpy as np
 
-# from finstruct.utils.checks import TYPECHECK
+from finstruct.utils.checks import TYPECHECK
 from finstruct.utils.types import Meta
-# from finstruct.core.unit import Unit
+from finstruct.core.space import Space
 
 # """
 # Driver([Basis], Projection)
@@ -27,11 +27,9 @@ A Driver can consist of multiple Spaces.
 Each Space needs to be internally consistent.
 """
 
-
-## Maybe also implement getters & setters for the conventions
-
-
-
+"""
+Adapt getters & setters to work with lists rather than Spaces.
+"""
 
 class SpaceGetter(object):
     def __init__(self, name):
@@ -54,21 +52,7 @@ class SpaceSetter(object):
         units[self.name] = value
         return setattr(owner, "_units", units)
     
-#     # @property
-#     # def basis(self):
 
-#     #     names = np.array([unit.name for unit in self.__basis])
-#     #     dtypes = np.dtype([(unit.name, unit.dtype) for unit in self.__basis])
-
-#     #     return {"names": names, "dtypes": dtypes}
-        
-#     # @property
-#     # def projection(self):
-
-#     #     name = np.array(self.__projection.name)
-#     #     dtype = np.dtype([name, self.__projection.dtype])
-
-#     #     return {"names": names, "dtypes": dtypes}
 
 
 class DriverMeta(Meta):
@@ -79,30 +63,34 @@ class DriverMeta(Meta):
 
         return type.__new__(cls, name, bases, attrs)
     
+
+
+
 class Driver(metaclass=DriverMeta):
 
     _SPACES = ['Basis', 'Projection']
 
     def __init__(self, *args) -> None:
 
+        spaces = [Space(unitlist) for unitlist in args]
 
         if self._SPACES:
-            self._units = dict(zip(self._SPACES, list(args)))
+            self._units = dict(zip(self._SPACES, spaces))
         else: 
             # if no spaces are provided, properties will also not be created
-            self._units = dict(zip(np.arange(len(*args)), list(args)))
+            self._units = dict(zip(np.arange(len(*args)), spaces))
 
     def __validate__(self):
 
-        for space in self._SPACES:
-            #self._check_conventions(space)
-            return True
+        for space in self._units.values():
+            TYPECHECK(space, Space)
+
 
     def __repr__(self):
 
         #         # return "Driver([{}])".format(*[repr(unit) for unit in self.__basis])
-        return "Driver"
-
+        ## Adapt representation to work with lists.
+        pass
 
 
 
