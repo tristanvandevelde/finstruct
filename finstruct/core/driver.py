@@ -72,7 +72,7 @@ class Driver(metaclass=DriverMeta):
 
     def __init__(self, *args) -> None:
 
-        spaces = [Space(unitlist) for unitlist in args]
+        spaces = [Space(*unitlist) for unitlist in args]
 
         if self._SPACES:
             self._units = dict(zip(self._SPACES, spaces))

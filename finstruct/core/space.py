@@ -24,7 +24,7 @@ class Space(metaclass=Meta):
         for unit in self.units:
             TYPECHECK(unit, Unit)
 
-        for conv1, conv2 in combinations(self.conventions):
+        for conv1, conv2 in combinations(self.conventions, 2):
             self.CONVENTIONCHECK(conv1, conv2)
 
     def __repr__(self):
