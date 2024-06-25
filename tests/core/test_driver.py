@@ -17,14 +17,9 @@ def test_driver():
     dunit = DateUnit("30/360")
 
     #print(dunit.conventions)
-    units = driver.units
+    units = driver._units
 
-    #for unit in list(driver.units[0].values()):
-    #    for u in unit:
-    #        print(list(u.values())[0])
-    print(driver.conventions(0))
 
-    #for unit in units:
         
 
 
