@@ -1,137 +1,169 @@
-from typing import Any
+# from typing import Any
 from itertools import chain, combinations
 
 import numpy as np
 
-from finstruct.utils.checks import TYPECHECK
+# from finstruct.utils.checks import TYPECHECK
 from finstruct.utils.types import Meta
-from finstruct.core.unit import Unit
+# from finstruct.core.unit import Unit
 
-"""
-Driver([Basis], Projection)
+# """
+# Driver([Basis], Projection)
 
-TODO:
-    - Representation in config files.
-    - Make such that all conventions agree with each other.
+# TODO:
+#     - Representation in config files.
+#     - Make such that all conventions agree with each other.
 
 
-Make subclasses:
-Driver(*args)
-StructDriver([Basis],Projection)
-EnvDriver([Basis])
+# Make subclasses:
+# Driver(*args)
+# StructDriver([Basis],Projection)
+# EnvDriver([Basis])
     
-"""
-
-class MetaDriver(type):
-
-    """
-    Create property for each element in the space.
-    """
+# """
 
 
 
-class Driver:
+## Maybe also implement getters & setters for the conventions
 
-    __SPACE = []
+class SpaceGetter(object):
+    def __init__(self, name):
+        self.name = name
 
-    def __init__(self,
-                 *args) -> None:
+    def __call__(self, owner):
+
+        # units = [{unit.name: list(unit.conventions.values())} for unit in list(self.__units[space])]
+        # return units[space]
+
+        units = getattr(owner, "_units")
+        return units[self.name]
+    
+class SpaceSetter(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, owner, value):
+        units = getattr(owner, "_units")
+        units[self.name] = value
+        return setattr(owner, "_units", units)
+    
+#     # @property
+#     # def basis(self):
+
+#     #     names = np.array([unit.name for unit in self.__basis])
+#     #     dtypes = np.dtype([(unit.name, unit.dtype) for unit in self.__basis])
+
+#     #     return {"names": names, "dtypes": dtypes}
         
-        spaces = (list(args))
+#     # @property
+#     # def projection(self):
 
-        if self.__SPACE:
-            self.__units = dict(zip(self.__SPACE, spaces))
-        else:
-            self.__units = dict(zip(np.arange(len(*args)), spaces))
+#     #     name = np.array(self.__projection.name)
+#     #     dtype = np.dtype([name, self.__projection.dtype])
 
-        # self.__validate__()
+#     #     return {"names": names, "dtypes": dtypes}
+
+
+class DriverMeta(Meta):
+
+    def __new__(cls, name, bases, attrs):
+        for space in attrs['_SPACES']:
+            attrs[space] = property(SpaceGetter(space), SpaceSetter(space))
+
+        return type.__new__(cls, name, bases, attrs)
+    
+class Driver(metaclass=DriverMeta):
+
+    _SPACES = ['Basis', 'Projection']
+
+    def __init__(self, *args) -> None:
+
+
+        if self._SPACES:
+            self._units = dict(zip(self._SPACES, list(args)))
+        else: 
+            # if no spaces are provided, properties will also not be created
+            self._units = dict(zip(np.arange(len(*args)), list(args)))
 
     def __validate__(self):
 
-        for space in self.__SPACE:
-            self.__check_conventions(space)
+        for space in self._SPACES:
+            #self._check_conventions(space)
+            return True
 
     def __repr__(self):
 
-        # for dimension in self.__units:
-
-        #     f""
-        
-        # return "Driver([{}])".format(*[repr(unit) for unit in self.__basis])
+        #         # return "Driver([{}])".format(*[repr(unit) for unit in self.__basis])
         return "Driver"
-    
 
-    def units(self,
-              space):
 
-        units = [{unit.name: list(unit.conventions.values())} for unit in list(self.__units[space])]
+    def CONVENTIONCHECK(self,
+                        convention1,
+                        convention2) -> None:
+
+        if type(convention1) == type(convention2):
+            if not convention1.value == convention2.value:
+                raise ValueError(f"Conventions {convention1} and {convention2} do not match.")
+            
+    def _conventions(self,
+                     space):
         
-        return units[space]
-        
-    def conventions(self,
-                    space):
-        
-        conventions = [list(unit.conventions.values()) for unit in list(self.__units[space])]
-        conventions = list(chain.from_iterable(conventions))
-        #conventions = list(chain(*conventions))
+        conventions = [list(unit.conventions.values()) for unit in list(self._units[space])]
+        return list(chain.from_iterable(conventions))
 
-        return conventions
-    
-    def __check_conventions(self,
-                            space):
+    def _check_conventions(self,
+                           space):
         
-        conventions = self.conventions(space)
-        for conv1, conv2 in combinations(conventions, 2):
-            if type(conv1) == type(conv2):
-                if not conv1.value == conv2.value:
-                    raise ValueError("Conventions do not match.")
+        conventions = self._conventions(space)
+        for conv1, conv2 in combinations(conventions):
+            self.CONVENTIONCHECK(conv1, conv2)
 
+    def _set_convention(self,
+                        space,
+                        convention):
+        
+        ctypes = [type(convention) for convention in self._conventions(space)]
+        if type(convention) in ctypes:
+            # replace the convention everywhere
+            # 
+            print("Setting")
 
-    def convert(self, 
+    def convert(self,
+                space,
                 **kwargs):
         
         """
-        Takes in conventions.
+        Change a convention.
+            Conventionname=convention
         """
-        
         pass
 
-class GenericDriver(Driver):
 
-    pass
 
-class BaseDriver(Driver):
 
-    __SPACE = ["Basis"]
 
-class ProjectionDriver(Driver):
 
-    __SPACE = ["Basis", "Projection"]
 
-    def __init__(self,
-                 basis: list,
-                 projection: Unit) -> None:
+
+
+# class BaseDriver(Driver):
+
+#     __SPACE = ["Basis"]
+
+# class ProjectionDriver(Driver):
+
+#     __SPACE = ["Basis", "Projection"]
+
+#     def __init__(self,
+#                  basis: list,
+#                  projection: Unit) -> None:
         
-        """
-        Example
-        -------
-        Driver([TermUnit("M", "30/360"), DateUnit("30/360|)], RateUnit("SPOT"))
-        """
+#         """
+#         Example
+#         -------
+#         Driver([TermUnit("M", "30/360"), DateUnit("30/360|)], RateUnit("SPOT"))
+#         """
         
-        super().__init__(basis, [projection])
+#         super().__init__(basis, [projection])
 
-    # @property
-    # def basis(self):
 
-    #     names = np.array([unit.name for unit in self.__basis])
-    #     dtypes = np.dtype([(unit.name, unit.dtype) for unit in self.__basis])
-
-    #     return {"names": names, "dtypes": dtypes}
-        
-    # @property
-    # def projection(self):
-
-    #     name = np.array(self.__projection.name)
-    #     dtype = np.dtype([name, self.__projection.dtype])
-
-    #     return {"names": names, "dtypes": dtypes}
