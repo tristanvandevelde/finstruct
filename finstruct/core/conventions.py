@@ -227,3 +227,9 @@ class MoneynessConvention(Convention):
 
     PRICE = auto()
     DELTA = auto()
+
+class NumberConvention(Convention):
+
+    BASE = auto()
+    LOG = auto()
+    EXP = auto()
