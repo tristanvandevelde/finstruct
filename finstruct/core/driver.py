@@ -12,6 +12,13 @@ Driver([Basis], Projection)
 TODO:
     - Representation in config files.
     - Make such that all conventions agree with each other.
+
+
+Make subclasses:
+Driver(*args)
+StructDriver([Basis],Projection)
+EnvDriver([Basis])
+    
 """
 
 class Driver:
