@@ -26,7 +26,7 @@ A possibility could also be to make it inherit from userdict, by using the dates
 ```mermaid
 graph TD;
     Unit-->Driver;
-    Driver->Environment;
+    Driver-->Environment;
     Driver-->Structure;
     Environment-->Market;
     Environment-->Contract;
