@@ -21,10 +21,17 @@ from finstruct.utils.types import Meta
 # EnvDriver([Basis])
     
 # """
-
+"""
+Idea: Extend over 2 classes. 
+A Driver can consist of multiple Spaces.
+Each Space needs to be internally consistent.
+"""
 
 
 ## Maybe also implement getters & setters for the conventions
+
+
+
 
 class SpaceGetter(object):
     def __init__(self, name):
@@ -96,47 +103,6 @@ class Driver(metaclass=DriverMeta):
         #         # return "Driver([{}])".format(*[repr(unit) for unit in self.__basis])
         return "Driver"
 
-
-    def CONVENTIONCHECK(self,
-                        convention1,
-                        convention2) -> None:
-
-        if type(convention1) == type(convention2):
-            if not convention1.value == convention2.value:
-                raise ValueError(f"Conventions {convention1} and {convention2} do not match.")
-            
-    def _conventions(self,
-                     space):
-        
-        conventions = [list(unit.conventions.values()) for unit in list(self._units[space])]
-        return list(chain.from_iterable(conventions))
-
-    def _check_conventions(self,
-                           space):
-        
-        conventions = self._conventions(space)
-        for conv1, conv2 in combinations(conventions):
-            self.CONVENTIONCHECK(conv1, conv2)
-
-    def _set_convention(self,
-                        space,
-                        convention):
-        
-        ctypes = [type(convention) for convention in self._conventions(space)]
-        if type(convention) in ctypes:
-            # replace the convention everywhere
-            # 
-            print("Setting")
-
-    def convert(self,
-                space,
-                **kwargs):
-        
-        """
-        Change a convention.
-            Conventionname=convention
-        """
-        pass
 
 
 

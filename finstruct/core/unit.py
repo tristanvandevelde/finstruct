@@ -80,7 +80,7 @@ class Unit:
 
         conventions = [convention.name for convention in self.conventions.values()]
         ## TODO: unpack conventions list
-        return f"{self.__class__.__name__}({conventions})"
+        return f"{self.__class__.__name__}{tuple(conventions)}"
 
 
     def set_conventions(self,

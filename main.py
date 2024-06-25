@@ -1,10 +1,15 @@
-from finstruct.core.unit import DateUnit, TermUnit, RateUnit
-from finstruct.core.driver import Driver
+from finstruct.core.unit import DateUnit, TermUnit
+from finstruct.core.space import Space
 
-basis = [DateUnit("30/360"), TermUnit("M", "30/360")]
-projection = [RateUnit("SPOT","LINEAR","Y",1)]
+import numpy as np
 
-driver = Driver(basis, projection)
+units = np.array([DateUnit("30/360"), TermUnit("M", "30/360")])
 
-print(driver.Basis)
-print(driver.Projection)
+ctypes = [type(unit) for unit in units]
+
+print([type(ctype) is DateUnit for ctype in ctypes])
+
+for ctype in ctypes:
+    print(ctype)
+
+print(DateUnit)
