@@ -11,9 +11,16 @@ class Interpolation(metaclass=ABCmeta):
         
         self.coords = coords
         self.values = values
+        self.construct()
 
         self.intrapolate = True
         self.extrapolate = False
+
+    def construct(self):
+
+        """
+        Construct the required parameter values such that the evaluate function can be executed.
+        """
 
     def evaluate(self,
                  coord):
