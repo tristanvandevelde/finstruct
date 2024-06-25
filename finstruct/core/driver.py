@@ -23,6 +23,22 @@ EnvDriver([Basis])
 
 class Driver:
 
+    SPACE = []
+
+    def __init__(self,
+                 *args) -> None:
+        pass
+
+class BaseDriver(Driver):
+
+    SPACE = ["Basis"]
+
+class ProjectionDriver(Driver):
+
+    SPACE = ["Basis", "Projection"]
+
+class StructDriver:
+
     """Driver class to hold the combination of Units to 'drive' the Structures.
 
     Attributes
