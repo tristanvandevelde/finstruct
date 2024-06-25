@@ -1,4 +1,5 @@
 from typing import Any
+from itertools import chain, combinations
 
 import numpy as np
 
@@ -27,14 +28,7 @@ class MetaDriver(type):
     Create property for each element in the space.
     """
 
-class GenericDriver:
 
-    def __init__(self,
-                 *args) -> None:
-        
-        self.__units = zip(np.arange(len(args)), args)
-
-        self.__validate__()
 
 class Driver:
 
@@ -43,13 +37,19 @@ class Driver:
     def __init__(self,
                  *args) -> None:
         
-        self.__units = dict(zip(self.__SPACE, args))
+        spaces = (list(args))
 
-        self.__validate__()
+        if self.__SPACE:
+            self.__units = dict(zip(self.__SPACE, spaces))
+        else:
+            self.__units = dict(zip(np.arange(len(*args)), spaces))
+
+        # self.__validate__()
 
     def __validate__(self):
 
-        self.__check_conventions()
+        for space in self.__SPACE:
+            self.__check_conventions(space)
 
     def __repr__(self):
 
@@ -60,36 +60,32 @@ class Driver:
         # return "Driver([{}])".format(*[repr(unit) for unit in self.__basis])
         return "Driver"
     
-    
-    @property
-    def conventions(self):
 
-        return [{unit: list(self.__units[unit].conventions.keys())} for unit in self.__units]
-    
+    def units(self,
+              space):
 
-    @property
-    def ctypes(self):
-
-        # unpack
-        conventions = [conv for conv in self.conventions.values()]
-        ctypes = set([type(convention) for convention in conventions])
-
-        return ctypes
+        units = [{unit.name: list(unit.conventions.values())} for unit in list(self.__units[space])]
         
+        return units[space]
+        
+    def conventions(self,
+                    space):
+        
+        conventions = [list(unit.conventions.values()) for unit in list(self.__units[space])]
+        conventions = list(chain.from_iterable(conventions))
+        #conventions = list(chain(*conventions))
 
-    def __check_conventions(self):
+        return conventions
+    
+    def __check_conventions(self,
+                            space):
+        
+        conventions = self.conventions(space)
+        for conv1, conv2 in combinations(conventions, 2):
+            if type(conv1) == type(conv2):
+                if not conv1.value == conv2.value:
+                    raise ValueError("Conventions do not match.")
 
-        for ctype in self.ctypes:
-
-            self.conventions
-
-        pass
-
-        # group conventions by type
-        # check that values are the same
-        # if not return error
-
-        pass
 
     def convert(self, 
                 **kwargs):
@@ -100,6 +96,9 @@ class Driver:
         
         pass
 
+class GenericDriver(Driver):
+
+    pass
 
 class BaseDriver(Driver):
 

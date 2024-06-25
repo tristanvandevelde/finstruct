@@ -21,6 +21,10 @@ class Structure:
 
     __interpolate__ = []
 
+    """
+    TODO: Implement different representations for the projection.
+    """
+
     def __init__(self,
                  data_coords,
                  data_vals,
