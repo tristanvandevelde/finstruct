@@ -109,6 +109,19 @@ class Unit:
         for convention in self.conventions:
             self.conventions[convention] = self.conventions[convention].from_key(kwargs[convention])
 
+    def change(self,
+               **kwargs):
+        
+        for ctype, convention in kwargs.items():
+
+            # if the convention type is present in the unit
+            if ctype in self.conventions.keys():
+                # if the convention is a possible value
+                if convention in [c.name for c in self.conventions[ctype].__class__]:
+                    # change the convention
+                    self.conventions[ctype] = self.conventions[ctype].__class__.from_key(convention)
+
+
 
 
     def convert(self,

@@ -3,11 +3,7 @@ from finstruct.core.space import Space
 
 import numpy as np
 
-def do(**kwargs):
-
-    print(kwargs)
-    for name, value in kwargs.items():
-        print(name)
-
-
-do(DaycountConvention="30/360")
+dunit = TermUnit("M", "30/360")
+print(dunit)
+dunit.change(TermConvention="Y", DateConvention="ACT/360")
+print(dunit)
