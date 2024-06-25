@@ -38,7 +38,4 @@ graph TD;
     Structure-->Curve;
     Structure-->Surface;
     Product-->Bootstrap;
-    Bootstrap-->Point;
-    Bootstrap-->Curve;
-    Bootstrap-->Surface;
 ```
