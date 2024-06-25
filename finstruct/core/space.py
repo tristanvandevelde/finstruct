@@ -50,11 +50,19 @@ class Space(metaclass=Meta):
         
         """Change a convention."""
 
-        for ctype, convention in kwargs:
+        # Make sure kwargs holds each convention only once
+
+        # Loop over all conventions that need to be changed
+        for cname, convention in kwargs.items():
             #TYPECHECK(ctype, Convention)
             for idx, unit in enumerate(self.units):
-                if ctype in [ctype.name for ctype in unit.ctypes]:
-                    self.units[idx] = unit.convert(ctype=convention)
+                conv_names = [conv.__name__ for conv in unit.ctypes]
+                if cname in conv_names:
+                    unit.set_conventions(cname=convention)
+
+        """
+        TODO: Extend such that conversion functions are returned.
+        """
 
     def CONVENTIONCHECK(self,
                         convention1,
@@ -64,12 +72,4 @@ class Space(metaclass=Meta):
             if not convention1.value == convention2.value:
                 raise ValueError(f"Conventions {convention1} and {convention2} do not match.")
             
-
-    def get_units(self,
-                  convention) -> list:
-        
-        """Return units that contain the convention"""
-
-        return [unit for unit in self.units if type(unit.convention) == type(convention)]
-
 

@@ -3,13 +3,11 @@ from finstruct.core.space import Space
 
 import numpy as np
 
-units = np.array([DateUnit("30/360"), TermUnit("M", "30/360")])
+def do(**kwargs):
 
-ctypes = [type(unit) for unit in units]
+    print(kwargs)
+    for name, value in kwargs.items():
+        print(name)
 
-print([type(ctype) is DateUnit for ctype in ctypes])
 
-for ctype in ctypes:
-    print(ctype)
-
-print(DateUnit)
+do(DaycountConvention="30/360")

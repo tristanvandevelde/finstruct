@@ -87,11 +87,29 @@ class Unit:
                         *args) -> None:
         
         # LENCHECK
+
+        """
+        TODO: Generalize such that not all conventions need to be set at once.
+        """
+        
+ 
         LENCHECK(args, self.ctypes)
 
         self.conventions = {ctype.__name__: ctype.from_key(convention) for convention, ctype in zip(args, self.ctypes)}
 
         self.__validate__()
+
+    def change_conventions(self,
+                           **kwargs) -> None:
+        
+        # filter out everything that isn't a convention
+        kwargs = {ctype: convention for ctype, convention in kwargs.items() if ctype in self.ctypes}
+
+        # filter again such that every convention is present only once.
+        for convention in self.conventions:
+            self.conventions[convention] = self.conventions[convention].from_key(kwargs[convention])
+
+
 
     def convert(self,
                 *args) -> callable:

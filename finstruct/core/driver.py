@@ -5,6 +5,7 @@ import numpy as np
 
 from finstruct.utils.checks import TYPECHECK
 from finstruct.utils.types import Meta
+from finstruct.core.unit import Unit
 from finstruct.core.space import Space
 
 # """
@@ -40,7 +41,7 @@ class SpaceGetter(object):
         # units = [{unit.name: list(unit.conventions.values())} for unit in list(self.__units[space])]
         # return units[space]
 
-        units = getattr(owner, "_units")
+        units = getattr(owner, "_dimensions")
         return units[self.name]
     
 class SpaceSetter(object):
@@ -48,9 +49,9 @@ class SpaceSetter(object):
         self.name = name
 
     def __call__(self, owner, value):
-        units = getattr(owner, "_units")
+        units = getattr(owner, "_dimensions")
         units[self.name] = value
-        return setattr(owner, "_units", units)
+        return setattr(owner, "_dimensions", units)
     
 
 
@@ -75,14 +76,14 @@ class Driver(metaclass=DriverMeta):
         spaces = [Space(*unitlist) for unitlist in args]
 
         if self._SPACES:
-            self._units = dict(zip(self._SPACES, spaces))
+            self._dimensions = dict(zip(self._SPACES, spaces))
         else: 
             # if no spaces are provided, properties will also not be created
-            self._units = dict(zip(np.arange(len(*args)), spaces))
+            self._dimensions = dict(zip(np.arange(len(*args)), spaces))
 
     def __validate__(self):
 
-        for space in self._units.values():
+        for space in self._dimensions.values():
             TYPECHECK(space, Space)
 
 
@@ -95,29 +96,22 @@ class Driver(metaclass=DriverMeta):
 
 
 
+class BaseDriver(Driver):
 
+    _SPACES = ["Basis"]
 
-
-
-
-# class BaseDriver(Driver):
-
-#     __SPACE = ["Basis"]
-
-# class ProjectionDriver(Driver):
-
-#     __SPACE = ["Basis", "Projection"]
-
-#     def __init__(self,
-#                  basis: list,
-#                  projection: Unit) -> None:
+    def __init__(self,
+                 basis: list) -> None:
         
-#         """
-#         Example
-#         -------
-#         Driver([TermUnit("M", "30/360"), DateUnit("30/360|)], RateUnit("SPOT"))
-#         """
-        
-#         super().__init__(basis, [projection])
+        super().__init__(basis)
 
+class ProjectionDriver(Driver):
+
+    _SPACES = ["Basis", "Projection"]
+
+    def __init__(self,
+                 basis: list,
+                 projection: Unit) -> None:
+        
+        super().__init__(basis, [projection])
 
