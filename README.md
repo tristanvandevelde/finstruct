@@ -28,7 +28,6 @@ graph TD;
     Unit-->Driver;
     Driver-->Calendar;
     Driver-->Structure;
-    Calendar-->Bootstrap;
     Structure-->Point;
     Structure-->Curve;
     Structure-->Surface;
