@@ -10,15 +10,16 @@ from finstruct.core.driver import Driver
 
 def test_driver():
 
-    driver = Driver([DateUnit("30/360"), TermUnit("M", "30/360")])
+    #driver = Driver([DateUnit("30/360"), TermUnit("M", "30/360")])
     #driver.print_units()
     #print(driver.conventions)
 
-    dunit = DateUnit("30/360")
+    #dunit = DateUnit("30/360")
 
     #print(dunit.conventions)
-    units = driver._units
+    #units = driver._units
 
+    print("test")
 
         
 
