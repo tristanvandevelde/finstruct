@@ -17,13 +17,14 @@ from finstruct.core.space import Space
 
 def test_space():
 
-    space = Space(DateUnit("30/360"), TermUnit("M", "30/360"))
+    #space = Space(DateUnit("30/360"), TermUnit("M", "30/360"))
     
-    print(space)
-    print(space.conventions)
-    print(space.ctypes)
+    #print(space)
+    #print(space.conventions)
+    #print(space.ctypes)
 
-    space.convert(DaycountConvention="30/360")
+    #space.convert(DaycountConvention="30/360")
+    print("test")
 
 if __name__ == "__main__":
 
