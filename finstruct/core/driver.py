@@ -115,3 +115,5 @@ class ProjectionDriver(Driver):
         
         super().__init__(basis, [projection])
 
+        ## TODO: Make sure interpolation only happens on the basis, and is disallowed for non numeric units.
+

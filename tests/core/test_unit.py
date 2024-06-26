@@ -21,9 +21,18 @@ class TestRateUnit:
 class TestTermUnit:
     pass
 
+def TestUnit():
+
+    tunit = TermUnit("Y", "30/360")
+    print(tunit)
+    cfuncs = tunit.convert(TermConvention="M")
+    print(tunit)
+    print(cfuncs['TermConvention'](1))
+
 
 
 if __name__ == "__main__":
 
-    sys.exit(pytest.main([__file__, "-c", "tests/pytest.ini"]))
+    #sys.exit(pytest.main([__file__, "-c", "tests/pytest.ini"]))
+    TestUnit()
 

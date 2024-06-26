@@ -29,7 +29,18 @@ class TestDaycountConvention:
 
 #     pass
 
+
+def test_convention():
+
+    daycount = DaycountConvention.from_key("30/360")
+    print(daycount)
+    #daycount = DaycountConvention.from_key("ACT/360")
+    #print(daycount)
+    daycount = daycount.from_key("ACT/360")
+    print(daycount)
+    #print(daycount)
+
 if __name__ == "__main__":
 
-    sys.exit(pytest.main([__file__, "-c", "tests/pytest.ini"]))
-
+    #sys.exit(pytest.main([__file__, "-c", "tests/pytest.ini"]))
+    test_convention()

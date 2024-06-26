@@ -65,11 +65,11 @@ class Convention(Enum):
                 return member
             
         raise ValueError(f"{name} is not a valid {cls}")
-
+    
     def convert(self,
-                new_convention):
+                convention):
         
-        raise NotImplementedError
+        return NotImplementedError
   
 
 
@@ -161,8 +161,10 @@ class TermConvention(Convention):
         M->Y: convert(value) = value * 12
         Y->M: convert(value) = value / 12
         """
+
+        convention = self.from_key(convention)
         
-        return lambda val: val * (convention.value / self.value)
+        return lambda val: val * (self.value / convention.value)
 
 class RateConvention(Convention):
 

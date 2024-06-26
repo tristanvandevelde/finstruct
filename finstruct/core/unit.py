@@ -99,18 +99,33 @@ class Unit:
 
         self.__validate__()
 
-    def change_conventions(self,
-                           **kwargs) -> None:
+
+    def inner_convert(self,
+                      **kwargs) -> dict:
         
-        # filter out everything that isn't a convention
-        kwargs = {ctype: convention for ctype, convention in kwargs.items() if ctype in self.ctypes}
+        """
+        Changes the given conventions in the unit, and returns the conversion function for each convention.
 
-        # filter again such that every convention is present only once.
-        for convention in self.conventions:
-            self.conventions[convention] = self.conventions[convention].from_key(kwargs[convention])
+        Parameters
+        ----------
+        **kwargs: conventionname=conventionvalue
+            The conventions that need to be changed, and the values to which they need to be changed.
 
-    def change(self,
-               **kwargs):
+        Returns
+        -------
+        cfuncs: dict
+            Dictionary of the conversion functions for each changed convention.
+
+        Example
+        -------
+        dunit = TermUnit("M", "30/360")
+        cfuncs = tunit.convert(TermConvention="Y)
+        values = cfuncs[TermConvention](values)
+        """
+
+        # make sure every convention is present only once
+        
+        cfuncs = {}
         
         for ctype, convention in kwargs.items():
 
@@ -118,18 +133,23 @@ class Unit:
             if ctype in self.conventions.keys():
                 # if the convention is a possible value
                 if convention in [c.name for c in self.conventions[ctype].__class__]:
+                    # get the conversion function
+                    cfuncs[ctype] = self.conventions[ctype].convert(convention)
                     # change the convention
-                    self.conventions[ctype] = self.conventions[ctype].__class__.from_key(convention)
+                    self.conventions[ctype] = self.conventions[ctype].from_key(convention)
 
-
-
-
-    def convert(self,
-                *args) -> callable:
-        
-        return lambda x: x
-
+        return cfuncs
     
+        
+    def convert(self,
+                **kwargs):
+        
+        """
+        Combination of conversion functions should be implemented on concrete Unit level.
+        """
+            
+        raise NotImplementedError
+
 
 class DateUnit(Unit):
 
@@ -149,6 +169,9 @@ class DateUnit(Unit):
         """Returns a numerical value for the date to be used in calculations.
         
         More concretely, the date is converted to a timestamp.
+        Implemented in order to be used in interpolation between dates.
+
+        Idea: possible to simply disallow, because will end up with non-discrete values.
         """
 
         return calendar.timegm(value.timetuple())
@@ -171,21 +194,18 @@ class TermUnit(Unit):
         super().__init__(termconvention, daycountconvention)
 
     def convert(self,
-                termconvention,
-                daycountconvention) -> callable:
+                **kwargs) -> callable:
         
-        termconvention_new = TermConvention.from_key(termconvention)
-        daycountconvention_new = DaycountConvention.from_key(daycountconvention)
+        cfuncs = self.inner_convert(**kwargs)
 
-        if daycountconvention_new != self.conventions[1]:
-            raise NotImplementedError
-        
-        if termconvention_new != self.conventions[0]:
-            ## Change expression of term.
+        conversion = cfuncs["TermConvention"]
 
-            ## For example:
-            ## M -> Y x = x/12
-            pass
+        if conversion:
+            return conversion
+        else:
+            return lambda x: x
+
+
     
 class RateUnit(Unit):
 

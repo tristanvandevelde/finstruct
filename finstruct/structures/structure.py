@@ -20,6 +20,7 @@ class Structure:
     DEFAULTS = {}
 
     __interpolate__ = []
+    # make sure interpolation is disallowed for non-numeric units.
 
     """
     TODO: Implement different representations for the projection.
