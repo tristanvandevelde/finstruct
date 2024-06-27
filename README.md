@@ -40,3 +40,33 @@ graph TD;
     Driver-->Surface;
     Product-->Bootstrap;
 ```
+
+
+A driver is what underlying should "drive" a structure.
+It should be defined by a set of spaces.
+The DerivedDriver class should indicate what the dimensions are, and which units should be in each dimension (space).
+The DerivedDriver object should instantiate these with conventions.
+
+So we can have:
+- Driver
+  - BaseDriver
+    - MarketDriver
+    - ContractDriver
+  - ProjectionDriver1D
+    - IRCurveDriver
+    - IRBaseCurveDriver
+    - VOLSurfaceDriver
+    - FXDriver
+    - CalendarDriver
+  - ProjectionDriverNN
+  - UniverseDriver
+    -> Should be able to be constructed from multiple other drivers.
+  - GenericDriver
+  - CombinedDriver
+
+The Driver class is there to interface with the metaclass.
+How it is now, the _SPACES can simply be replaced by a dict.
+
+At the start, the Driver might have very limited capabilities and will be there mostly to combine the Spaces in a useful way.
+
+IDEA: A function that, given another driver, converts the driver to the same basis.

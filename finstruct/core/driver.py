@@ -32,6 +32,12 @@ Each Space needs to be internally consistent.
 Adapt getters & setters to work with lists rather than Spaces.
 """
 
+
+# TODO:
+# Decide. The advantage of using separate driver classes would be the possibility to create 2 structures with the same driver.
+# The setup is then exactly the same, only the values are not.
+# Investigate if this is possible with configurations.
+
 class SpaceGetter(object):
     def __init__(self, name):
         self.name = name
@@ -92,8 +98,6 @@ class Driver(metaclass=DriverMeta):
         #         # return "Driver([{}])".format(*[repr(unit) for unit in self.__basis])
         ## Adapt representation to work with lists.
         pass
-
-
 
 
 class BaseDriver(Driver):
