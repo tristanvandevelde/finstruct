@@ -30,17 +30,15 @@ graph TD;
     Convention-->Unit;
     Unit-->Space;
     Space-->Driver;
+    Interpolation-->Structure;
+    Driver-->Structure;
     Driver-->Environment;
     Environment-->Market;
     Environment-->Contract;
-    Market-->Product;
-    Contract-->Product;
-    Calendar-->Product;
-    Driver-->Calendar;
-    Driver-->Point;
-    Driver-->Curve;
-    Driver-->Surface;
-    Product-->Bootstrap;
+    Structure-->Calendar;
+    Structure-->Point;
+    Structure-->Curve;
+    Structure-->Surface;
 ```
 
 ### Driver
