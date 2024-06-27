@@ -8,7 +8,6 @@ from finstruct.core.conventions import Convention
 from finstruct.core.unit import Unit
 
 
-
 class Space(metaclass=Meta):
 
     """A space is a collection of units that needs to be internally consistent.
