@@ -34,7 +34,7 @@ graph TD;
     Driver-->Environment;
     Environment-->Market;
     Environment-->Contract;
-    Structure-->Calendar;
+    Driver-->Calendar;
     Structure-->Point;
     Structure-->Curve;
     Structure-->Surface;
