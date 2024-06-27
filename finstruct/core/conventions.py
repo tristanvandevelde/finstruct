@@ -9,18 +9,6 @@ import numpy.typing as npt
 
 from finstruct.utils.checks import TYPECHECK, LENCHECK
 
-"""
-TODO:
-    Units to implement:
-        - Volatility unit
-        - Moneyness unit
-        - Money unit
-        - Rate unit
-    Rateunit:
-        - How to deal with frequency of compounding?
-    To implement:
-        - Conversion methods
-"""
 
 class Convention(Enum):
 
@@ -93,7 +81,6 @@ class DaycountConvention(Convention):
     m_30_365 = (30, 365)
     m_ACT_360 = ("ACT", 360)
     m_ACT_365 = ("ACT", 365)
-    m_ACT_ACT = ("ACT", "ACT")
 
     @DynamicClassAttribute
     def name(self):
@@ -124,7 +111,7 @@ class DaycountConvention(Convention):
         """
          
         if self.fractions["month"] == "ACT":
-            days = int(end_date - start_date)
+            days = (end_date - start_date).astype("int")
         else:
             get_date = lambda x: np.array([x.day, x.month, x.year])
             start_date = get_date(start_date.astype("object"))

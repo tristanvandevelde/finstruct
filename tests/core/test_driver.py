@@ -21,13 +21,9 @@ def test_driver():
 
     print("test")
 
-        
-
-
-    
-
 
 if __name__ == "__main__":
 
     #sys.exit(pytest.main([__file__, "-c", "tests/pytest.ini"]))
     test_driver()
+
