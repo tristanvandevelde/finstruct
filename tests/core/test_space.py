@@ -4,30 +4,28 @@ sys.path.append(os.getcwd())
 import numpy as np
 import pytest 
 
-from finstruct.core.unit import DateUnit, TermUnit, RateUnit
+from finstruct.core.unit import DateUnit, TermUnit
 from finstruct.core.space import Space
 
+class TestSpace:
 
-# @pytest.mark.parametrize("name, value", [(convention.name, convention.value) for convention in DaycountConvention])
-# class TestDaycountConvention:
+    def test_create_success(self):
 
-#     def test_from_key(self, name, value):
+        dunit = DateUnit("30/360")
+        tunit = TermUnit("Y", "30/360")
+        space = Space(dunit, tunit)
 
-#         assert DaycountConvention.from_key(name).value == value
+        assert type(space) == Space
 
-def test_space():
+    def test_create_fail(self):
 
-    #space = Space(DateUnit("30/360"), TermUnit("M", "30/360"))
-    
-    #print(space)
-    #print(space.conventions)
-    #print(space.ctypes)
+        dunit = DateUnit("30/360")
+        tunit = TermUnit("Y", "30/365")
+        with pytest.raises(ValueError):
+            space = Space(dunit, tunit)
 
-    #space.convert(DaycountConvention="30/360")
-    print("test")
 
 if __name__ == "__main__":
 
-    #sys.exit(pytest.main([__file__, "-c", "tests/pytest.ini"]))
+    sys.exit(pytest.main([__file__, "-c", "tests/pytest.ini"]))
     
-    test_space()
