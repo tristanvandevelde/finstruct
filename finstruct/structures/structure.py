@@ -6,14 +6,46 @@
 # import numpy as np
 # import numpy.typing as npt
 
-# from finstruct.unit import Unit
+from finstruct.core.unit import Unit, TermUnit
 # from finstruct.basis import Basis
 # from finstruct.utils.checks import TYPECHECK
+from finstruct.utils.types import Meta
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 
 from finstruct.core.driver import Driver
+
+
+"""Question: Should part of Structure be a Metaclass?"""
+
+# TODO:
+# idea - Structure will take over the function of driver.
+
+class StructureNew(metaclass=Meta):
+
+    _SPACES = {}
+
+    def __init__(self):
+
+        pass
+
+class BasisStructure(StructureNew):
+
+    _SPACES = {
+        "Basis": []
+    }
+
+class ProjectionStructure(StructureNew):
+
+    _SPACES = {
+        "Basis": [],
+        "Projection": []
+    }
+
+
+
+
 
 class Structure:
 

@@ -43,6 +43,24 @@ class Space(metaclass=Meta):
         ctypes = [unit.ctypes for unit in self.units]
 
         return set(chain.from_iterable(ctypes))
+    
+    @property
+    def dtypes(self):
+
+        """
+        Return the dtypes of the units.
+        """
+
+        return [unit.dtype for unit in self.units]
+
+    @property
+    def names(self):
+
+        """
+        Return the names of the units.
+        """
+
+        return [unit.name for unit in self.units]
 
     def convert(self,
                 **kwargs):
