@@ -1,16 +1,33 @@
-from finstruct.utils.types import Meta
-
+from finstruct.utils.types import Meta, FLDict
+from finstruct.core.unit import DateUnit, TermUnit, RateUnit
 
 class DriverMeta(Meta):
+
+    @classmethod
+    def __prepare__(metacls, name, bases, **kwargs):
+        # kwargs = {}
+        #return super().__prepare__(name, bases, **kwargs)
+        return super().__prepare__(name, bases)
+    
+    def __new__(metacls, name, bases, namespace, **kwargs):
+        return super().__new__(metacls, name, bases, namespace)
+    
+    def __init__(cls, name, bases, namespace, **kwargs):
+
+        #namespace = {**namespace,
+        #             "_SPACES": FLDict(kwargs["spaces"])}
+        print(kwargs)
+
+        super().__init__(name, bases, namespace)
 
     def __validate__(self):
 
         """Validate that all the spaces are set correctly."""
 
-        for dimension in self.spaces:
-            """
-            Implement typecheck for Spaces.
-            """
+        # for dimension in self.spaces:
+        #     """
+        #     Implement typecheck for Spaces.
+        #     """
 
         pass
 
@@ -21,10 +38,20 @@ class DriverMeta(Meta):
         return type.__new__(cls, name, bases, attrs)
     
 
-class Driver:
+class Driver(metaclass=DriverMeta):
 
-    _SPACETYPES = {}
+    @classmethod
+    def read_config(cls,
+                    configfile):
+        pass
 
-    def __init__(self):
+class BaseDriver(metaclass=DriverMeta, spaces=["Basis"]):
+    pass
 
-        self.spaces = {}
+class ProjectionDriver(metaclass=DriverMeta, spaces=["Basis", "Projection"]):
+    pass
+
+class IRCurveDriver(ProjectionDriver):
+
+    _SPACES["Basis"] = [DateUnit, TermUnit]
+    _SPACES["Projection"] = [RateUnit]
