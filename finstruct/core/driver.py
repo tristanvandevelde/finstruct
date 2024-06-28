@@ -8,22 +8,8 @@ from finstruct.utils.types import Meta
 from finstruct.core.unit import Unit
 from finstruct.core.space import Space
 
-# """
-# Driver([Basis], Projection)
 
-# TODO:
-#     - Representation in config files.
-#     - Make such that all conventions agree with each other.
-
-
-# Make subclasses:
-# Driver(*args)
-# StructDriver([Basis],Projection)
-# EnvDriver([Basis])
-    
-# """
 """
-Idea: Extend over 2 classes. 
 A Driver can consist of multiple Spaces.
 Each Space needs to be internally consistent.
 """
@@ -32,11 +18,6 @@ Each Space needs to be internally consistent.
 Adapt getters & setters to work with lists rather than Spaces.
 """
 
-
-# TODO:
-# Decide. The advantage of using separate driver classes would be the possibility to create 2 structures with the same driver.
-# The setup is then exactly the same, only the values are not.
-# Investigate if this is possible with configurations.
 
 class SpaceGetter(object):
     def __init__(self, name):
@@ -119,5 +100,4 @@ class ProjectionDriver(Driver):
         
         super().__init__(basis, [projection])
 
-        ## TODO: Make sure interpolation only happens on the basis, and is disallowed for non numeric units.
 
