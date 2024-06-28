@@ -1,3 +1,4 @@
+from collections.abc import MutableMapping
 
 
 class Meta(type):
@@ -27,27 +28,36 @@ class Meta(type):
 
         return obj
 
-#from collections import defaultdict
 
-#dimnames = ["Basis", "Projection"]
-#subdict = defaultdict(
-#    lambda: [],
-#    dimnames
-#)
+class FixedListedDict(MutableMapping):
+    
+    def __init__(self, *args, **kwargs):
+        
+        
+        self._dictionary = {**{name: [] for name in args}, 
+                            **{key: list(value) for key, value in kwargs.items()}}
+        
+    def __setitem__(self, key, item):
+        if key not in self._dictionary:
+            raise KeyError("The key {} is not defined.".format(key))
+        self._dictionary[key] = item
+        
+    def __getitem__(self, key):
+        return self._dictionary[key]
+    
+    def __iter__(self):
+        return iter(self._dictionary)
 
-# https://stackoverflow.com/questions/14816341/define-a-python-dictionary-with-immutable-keys-but-mutable-values
-# https://tedboy.github.io/python_stdlib/generated/generated/collections.MutableMapping.html
-# https://realpython.com/python-mappings/
-# https://realpython.com/python-mutable-vs-immutable-types/
-# https://www.geeksforgeeks.org/collections-userdict-in-python/?ref=next_article
-# https://www.geeksforgeeks.org/defaultdict-in-python/
-
-class FixedDict(object):
-        def __init__(self, dictionary):
-            self._dictionary = dictionary
-        def __setitem__(self, key, item):
-                if key not in self._dictionary:
-                    raise KeyError("The key {} is not defined.".format(key))
-                self._dictionary[key] = item
-        def __getitem__(self, key):
-            return self._dictionary[key]
+    def __len__(self):
+        return len(self._dictionary)
+    
+    def __delitem__(self):
+        raise NotImplementedError
+        
+    def __repr__(self):
+        
+        return f"{self.__class__.__name__}({self._dictionary})"
+    
+    def __str__(self):
+        
+        return str(self._dictionary)
