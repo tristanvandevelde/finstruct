@@ -1,12 +1,14 @@
-# from finstruct.core.unit import DateUnit, TermUnit
-# from finstruct.core.space import Space
-# from finstruct.core.driver_new import BaseDriver
 
-from finstruct.core.unit import Unit, DateUnit, TermUnit, RateUnit
+
+import configparser
+import inspect
+
+
+from finstruct.core.unit import Unit, DateUnit, TermUnit, RateUnit, CashUnit
 from finstruct.utils.types import Meta, FLDict
 from finstruct.utils.checks import TYPECHECK
+from finstruct.core.space import Space
 
-import inspect
 
 class SpaceGetter(object):
     def __init__(self, name):
@@ -40,7 +42,7 @@ class MetaDriver(type):
 
         namespace = {
             **super().__prepare__(name, bases, **kwargs),
-            "__validate__": metacls.__validate__,
+            #"__validate__": metacls.__validate__,
             "_DIMTYPES": spaces
         }
 
@@ -55,33 +57,87 @@ class MetaDriver(type):
         for space in namespace["_DIMTYPES"]:
             namespace[space] = property(SpaceGetter, SpaceSetter)
 
-        print(inspect.signature(namespace["__init__"]))
-        print(list(namespace["_DIMTYPES"].keys()))
-
         return super().__new__(metacls, name, bases, namespace)
     
     def __init__(cls, name, bases, namespace, **kwargs):
 
         super().__init__(name, bases, namespace)
 
+class MetaBaseDriver(MetaDriver):
 
-## Change such that the kwargs are the names of the spaces
-## The values are then the units.
+    @classmethod
+    def __prepare__(metacls, name, bases, **kwargs):
+
+        if not list(kwargs.keys()) == ["Basis"]:
+            raise KeyError("Only Basis accepted as dimension.")
+        
+        return super().__prepare__(name, bases, **kwargs)
+        
+
+class MetaProjectionDriver(MetaDriver):
+
+    @classmethod
+    def __prepare__(metacls, name, bases, **kwargs):
+
+        if not list(kwargs.keys()) == ["Basis", "Projection"]:
+            raise KeyError("Only Basis accepted as dimension.")
+        
+        return super().__prepare__(name, bases, **kwargs)
+
+
 
 ## Can subclass the Metaclass to make MetaBaseDriver and MetaProjectionDriver
 
-## Now require that the init also requests these values.
-
-
-class IRCurveDriver(metaclass=MetaDriver, Basis=[DateUnit, TermUnit], Projection=[RateUnit]):
+class Driver(metaclass=MetaDriver,
+             test = [DateUnit]):
     
     def __init__(self,
-                 basis,
-                 projection):
-        pass
+                 name = None,
+                 description = None,
+                 **kwargs) -> None:
+        
+        self.name = name
+        self.description = description
+
+        if self._DIMTYPES is not None:
+            if not set(kwargs.keys()) == set(self._DIMTYPES.keys()):
+                raise ValueError("Required dimensions not present.")
+            
+        self._DIMENSIONS = FLDict(*self._DIMTYPES.keys())
+
+        # Also assert the correct types of units
+        for key, value in kwargs.items():  
+            for unit in value:
+                TYPECHECK(unit, Unit)
+            self._DIMENSIONS[key] = Space(*value)
+            
+
+
+class IRCurveDriver(Driver,
+                    metaclass=MetaDriver, 
+                    Basis=[DateUnit, TermUnit], 
+                    Projection=[RateUnit]):
+    pass
+
+class CalendarDriver(Driver,
+                     metaclass=MetaDriver,
+                     Basis=[DateUnit],
+                     Projection=[CashUnit]):
+    pass
+
+driver = CalendarDriver(Basis=[DateUnit("30/360")], Projection=[TermUnit("Y", "30/360")])
+
+print(driver.Basis)
 
 
 
-print(IRCurveDriver._DIMTYPES)
+# def read_config(configfile) -> Driver:
 
-#inspect()
+#     # read config file
+#     # from general, take attributes
+#     # Assert that all spaces are present
+#     # Assert that all spaces contain the required units
+#     # generate object
+#     # return object
+
+#     return True
