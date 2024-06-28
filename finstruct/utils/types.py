@@ -57,7 +57,7 @@ class Meta(type):
 
         namespace = {
             **super().__prepare__(mcs, name, bases),
-            "__validate__": mcs.__validate__
+            "__validate__": lambda self: None
         }
 
         return namespace
