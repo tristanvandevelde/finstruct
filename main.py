@@ -86,7 +86,6 @@ class MetaProjectionDriver(MetaDriver):
 
 
 
-## Can subclass the Metaclass to make MetaBaseDriver and MetaProjectionDriver
 
 class Driver(metaclass=MetaDriver,
              test = [DateUnit]):
@@ -110,7 +109,38 @@ class Driver(metaclass=MetaDriver,
             for unit in value:
                 TYPECHECK(unit, Unit)
             self._DIMENSIONS[key] = Space(*value)
+
+    @classmethod
+    def read_config(cls,
+                    configfile):
+        
+        config = configparser.ConfigParser()
+        config.read(configfile)
+
+        #general = dict(config["General"].items())
+        #print(exec(general["type"] + "()"))
+
+        #TYPECHECK(exec(general["type"]), cls)
+        #print(gen)
+
+
+        space_sections = config.sections().remove("General")
+
+        print(space_sections)
+
+        #general = config.get("General")
+        
+        ## Extra check: do only if type is subclass of cls
+        # -> this way drivers can be read through Driver or through the actual driver (such as IRCurveDriver)
+
+        
+
+    def write_config(self,
+                     configfile):
+
+        pass
             
+
 
 
 class IRCurveDriver(Driver,
@@ -141,3 +171,31 @@ print(driver.Basis)
 #     # return object
 
 #     return True
+
+
+
+
+def read_config(configfile):
+        
+    config = configparser.ConfigParser()
+    config.read(configfile)
+
+    general = dict(config["General"].items())
+    cls = globals()[general["type"]]
+    objname = general["name"]
+    # check the cls stuff
+
+    #TYPECHECK(exec(general["type"]), Driver)
+        #print(gen)
+
+
+    space_sections = config.sections()
+    space_sections.remove("General")
+    for section in space_sections:
+        print(config[section].name)
+        kwargs = dict(config[section].items())
+        # unpack somehow
+        print()
+
+
+read_config("config/drivers/IRBaseCurve.ini")
