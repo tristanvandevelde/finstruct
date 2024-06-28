@@ -6,23 +6,57 @@ from finstruct.core.unit import Unit, DateUnit, TermUnit, RateUnit
 from finstruct.utils.types import Meta, FLDict
 from finstruct.utils.checks import TYPECHECK
 
+import inspect
+
+class SpaceGetter(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, owner):
+        units = getattr(owner, "_DIMENSIONS")
+        return units[self.name]
+    
+class SpaceSetter(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, owner, value):
+        units = getattr(owner, "_DIMENSIONS")
+        units[self.name] = value
+        return setattr(owner, "_DIMENSIONS", units)
+
 class MetaDriver(type):
 
     @classmethod
     def __prepare__(metacls, name, bases, **kwargs):
-
-        return super().__prepare__(name, bases, **kwargs)
-    
-    def __new__(metacls, name, bases, namespace, **kwargs):
 
         for space in kwargs.values():
             TYPECHECK(space, list)
             for el in space:
                 if not issubclass(el, Unit):
                     raise ValueError("Only units accepted.")
+                
+        spaces = FLDict(**kwargs)
 
-        namespace = {**namespace,
-                     "_SPACES": FLDict(**kwargs)}
+        namespace = {
+            **super().__prepare__(name, bases, **kwargs),
+            "__validate__": metacls.__validate__,
+            "_DIMTYPES": spaces
+        }
+
+        return namespace
+    
+    def __validate__(self) -> None:
+
+        pass
+    
+    def __new__(metacls, name, bases, namespace, **kwargs):
+
+        for space in namespace["_DIMTYPES"]:
+            namespace[space] = property(SpaceGetter, SpaceSetter)
+
+        print(inspect.signature(namespace["__init__"]))
+        print(list(namespace["_DIMTYPES"].keys()))
 
         return super().__new__(metacls, name, bases, namespace)
     
@@ -39,9 +73,15 @@ class MetaDriver(type):
 ## Now require that the init also requests these values.
 
 
-class C(metaclass=MetaDriver, Basis=[DateUnit, TermUnit], Projection=[RateUnit]):
+class IRCurveDriver(metaclass=MetaDriver, Basis=[DateUnit, TermUnit], Projection=[RateUnit]):
     
-    pass
+    def __init__(self,
+                 basis,
+                 projection):
+        pass
 
 
-print(C._SPACES)
+
+print(IRCurveDriver._DIMTYPES)
+
+#inspect()
