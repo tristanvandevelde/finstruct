@@ -23,3 +23,8 @@ def SIZECHECK(item):
 def DIMCHECK(item):
 
     pass
+
+def SPACECHECK(space,
+               units) -> None:
+    
+    pass
