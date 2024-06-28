@@ -29,7 +29,11 @@ class Meta(type):
         return obj
 
 
-class FixedListedDict(MutableMapping):
+class FLDict(MutableMapping):
+
+    """
+    Dict-like object with fixed keys and lists as values.
+    """
     
     def __init__(self, *args, **kwargs):
         
