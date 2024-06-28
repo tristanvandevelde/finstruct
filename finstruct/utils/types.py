@@ -29,6 +29,7 @@ class Meta(type):
 
 from collections import defaultdict
 
+dimnames = ["Basis", "Projection"]
 subdict = defaultdict(
     lambda: [],
     dimnames
