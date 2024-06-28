@@ -75,6 +75,23 @@ graph TD;
     ProjectionDriver1D-->CalendarDriver;
 ```
 
+### Driver
+
+```mermaid
+graph TD;
+    DriverMeta-->Driver;
+    Driver-->GenericDriver;
+    Driver-->BaseDriver;
+    Driver-->ProjectionDriver1D;
+    Driver-->UniverseDriver;
+    BaseDriver-->MarketDriver;
+    BaseDriver-->ContractDriver;
+    ProjectionDriver1D-->IRCurveDriver;
+    ProjectionDriver1D-->VOLSurfaceDriver;
+    ProjectionDriver1D-->FXDriver;
+    ProjectionDriver1D-->CalendarDriver;
+```
+
 
 A driver is what underlying should "drive" a structure.
 It should be defined by a set of spaces.
