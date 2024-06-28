@@ -44,10 +44,6 @@ class Meta(type):
     Adds the __validate__ method to each class, and executes it after the initialization.
     """
 
-    def __validate__(self) -> None:
-
-        pass
-
     ## TODO: Extend with **kwargs such that DriverMeta can inherit from it.
     # https://stackoverflow.com/questions/13762231/how-to-pass-arguments-to-the-metaclass-from-the-class-definition
     # 
@@ -57,14 +53,15 @@ class Meta(type):
 
         namespace = {
             **super().__prepare__(mcs, name, bases),
-            "__validate__": lambda self: None
+            "__validate__": lambda *args: None
         }
 
         return namespace
          
     def __call__(cls, *args, **kwargs):
 
-        obj = super(Meta, cls).__call__(*args, **kwargs)
+        #obj = super(Meta, cls).__call__(*args, **kwargs)
+        obj = super().__call__(*args, **kwargs)
         obj.__validate__()
 
         return obj
