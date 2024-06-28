@@ -27,13 +27,20 @@ class Meta(type):
 
         return obj
 
-from collections import defaultdict
+#from collections import defaultdict
 
-dimnames = ["Basis", "Projection"]
-subdict = defaultdict(
-    lambda: [],
-    dimnames
-)
+#dimnames = ["Basis", "Projection"]
+#subdict = defaultdict(
+#    lambda: [],
+#    dimnames
+#)
+
+# https://stackoverflow.com/questions/14816341/define-a-python-dictionary-with-immutable-keys-but-mutable-values
+# https://tedboy.github.io/python_stdlib/generated/generated/collections.MutableMapping.html
+# https://realpython.com/python-mappings/
+# https://realpython.com/python-mutable-vs-immutable-types/
+# https://www.geeksforgeeks.org/collections-userdict-in-python/?ref=next_article
+# https://www.geeksforgeeks.org/defaultdict-in-python/
 
 class FixedDict(object):
         def __init__(self, dictionary):
