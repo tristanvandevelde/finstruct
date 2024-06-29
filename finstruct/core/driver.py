@@ -140,6 +140,12 @@ class IRCurveDriver(Driver,
     Projection: Space(RateUnit)
     """
 
+class IRMultiCurveDriver(Driver,
+                        metaclass=MetaProjectionDriver, 
+                        Basis=[DateUnit, TermUnit], 
+                        Projection=[RateUnit, RateUnit]):
+    """Driver to construct IR Multicurves. Maybe extend somehow to allow X amount of Estimation curves."""
+
 class VOLSurfaceDriver(Driver,
                        metaclass=MetaProjectionDriver,
                        Basis=[DateUnit, TermUnit, MoneynessUnit],
