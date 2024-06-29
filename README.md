@@ -34,76 +34,8 @@ graph TD;
     Driver-->Environment;
     Environment-->Market;
     Environment-->Contract;
-    Driver-->Calendar;
+    Structure-->Calendar;
     Structure-->Point;
     Structure-->Curve;
     Structure-->Surface;
-    Interpolation-->Structure;
 ```
-
-### Driver
-
-```mermaid
-graph TD;
-    DriverMeta-->Driver;
-    Driver-->GenericDriver;
-    Driver-->BaseDriver;
-    Driver-->ProjectionDriver1D;
-    Driver-->UniverseDriver;
-    BaseDriver-->MarketDriver;
-    BaseDriver-->ContractDriver;
-    ProjectionDriver1D-->IRCurveDriver;
-    ProjectionDriver1D-->VOLSurfaceDriver;
-    ProjectionDriver1D-->FXDriver;
-    ProjectionDriver1D-->CalendarDriver;
-```
-
-### Driver
-
-```mermaid
-graph TD;
-    DriverMeta-->Driver;
-    Driver-->GenericDriver;
-    Driver-->BaseDriver;
-    Driver-->ProjectionDriver1D;
-    Driver-->UniverseDriver;
-    BaseDriver-->MarketDriver;
-    BaseDriver-->ContractDriver;
-    ProjectionDriver1D-->IRCurveDriver;
-    ProjectionDriver1D-->VOLSurfaceDriver;
-    ProjectionDriver1D-->FXDriver;
-    ProjectionDriver1D-->CalendarDriver;
-```
-
-### Driver
-
-```mermaid
-graph TD;
-    DriverMeta-->Driver;
-    Driver-->GenericDriver;
-    Driver-->BaseDriver;
-    Driver-->ProjectionDriver1D;
-    Driver-->UniverseDriver;
-    BaseDriver-->MarketDriver;
-    BaseDriver-->ContractDriver;
-    ProjectionDriver1D-->IRCurveDriver;
-    ProjectionDriver1D-->VOLSurfaceDriver;
-    ProjectionDriver1D-->FXDriver;
-    ProjectionDriver1D-->CalendarDriver;
-```
-
-
-A driver is what underlying should "drive" a structure.
-It should be defined by a set of spaces.
-The DerivedDriver class should indicate what the dimensions are, and which units should be in each dimension (space).
-The DerivedDriver object should instantiate these with conventions.
-
-
-
-The Driver class is there to interface with the metaclass.
-How it is now, the _SPACES can simply be replaced by a dict.
-
-At the start, the Driver might have very limited capabilities and will be there mostly to combine the Spaces in a useful way.
-The main challenge will be in designing the Metaclass to work in the general way we want it to.
-
-IDEA: A function that, given another driver, converts the driver to the same basis.
