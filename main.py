@@ -2,6 +2,11 @@
 from finstruct.core.unit import DateUnit, TermUnit, RateUnit
 from finstruct.core.driver import Driver, IRCurveDriver
 #from finstruct.core.driver import CalendarDriver, read_config
+from finstruct.structures.structure_new import Structure
+
+import datetime
+
+import numpy as np
 
 
 # import configparser
@@ -30,3 +35,13 @@ from finstruct.core.driver import Driver, IRCurveDriver
 #         #print(type(unitconventions))
 #         #print(unitconventions.split(", "))
 #         print(unitconventions.split(", "))
+
+
+driver = IRCurveDriver(Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
+                        Projection=[RateUnit("SPOT", "LINEAR", "Y")])
+
+
+
+
+
+print(struct._coords)
