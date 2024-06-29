@@ -240,6 +240,10 @@ class CashUnit(Unit):
         super().__init__(cashconvention)
 
 
+class ProbabilityUnit(Unit):
+
+    pass
+
 class GenericUnit(Unit):
 
     """Generic unit to be used in a general setting.

@@ -1,34 +1,20 @@
-# from typing import Any
-from itertools import chain, combinations
 
-import numpy as np
 
+import configparser
+import inspect
+
+
+from finstruct.core.unit import Unit, DateUnit, TermUnit, RateUnit, CashUnit
+from finstruct.utils.types import Meta, FLDict
 from finstruct.utils.checks import TYPECHECK
-from finstruct.utils.types import Meta
-from finstruct.core.unit import Unit
 from finstruct.core.space import Space
-
-
-"""
-A Driver can consist of multiple Spaces.
-Each Space needs to be internally consistent.
-"""
-
-"""
-Adapt getters & setters to work with lists rather than Spaces.
-"""
-
 
 class SpaceGetter(object):
     def __init__(self, name):
         self.name = name
 
     def __call__(self, owner):
-
-        # units = [{unit.name: list(unit.conventions.values())} for unit in list(self.__units[space])]
-        # return units[space]
-
-        units = getattr(owner, "_dimensions")
+        units = getattr(owner, "_DIMENSIONS")
         return units[self.name]
     
 class SpaceSetter(object):
@@ -36,68 +22,128 @@ class SpaceSetter(object):
         self.name = name
 
     def __call__(self, owner, value):
-        units = getattr(owner, "_dimensions")
-        units[self.name] = value
-        return setattr(owner, "_dimensions", units)
+        units = getattr(owner, "_DIMENSIONS")
+        units[self.name] = Space(*value) #value
+        return setattr(owner, "_DIMENSIONS", units)
+
+class MetaDriver(type):
+
+    """Metaclass to create Driver classes.
     
+    """
 
+    @classmethod
+    def __prepare__(metacls, name, bases, **kwargs):
+        """Create _DIMTYPES classvariable based on class input.
+        """
 
+        for space in kwargs.values():
+            TYPECHECK(space, list)
+            for el in space:
+                if not issubclass(el, Unit):
+                    raise ValueError("Only units accepted.")
+                
+        spaces = FLDict(**kwargs)
 
-class DriverMeta(Meta):
+        namespace = {
+            **super().__prepare__(name, bases, **kwargs),
+            "_DIMTYPES": spaces
+        }
 
-    def __new__(cls, name, bases, attrs):
-        for space in attrs['_SPACES']:
-            attrs[space] = property(SpaceGetter(space), SpaceSetter(space))
-
-        return type.__new__(cls, name, bases, attrs)
+        return namespace
     
+    def __new__(metacls, name, bases, namespace, **kwargs):
+
+        for space in namespace["_DIMTYPES"]:
+            namespace[space] = property(SpaceGetter(space), SpaceSetter(space))
+
+        return super().__new__(metacls, name, bases, namespace)
+    
+    def __init__(cls, name, bases, namespace, **kwargs):
+
+        super().__init__(name, bases, namespace)
+
+class MetaBaseDriver(MetaDriver):
+
+    @classmethod
+    def __prepare__(metacls, name, bases, **kwargs):
+
+        if not list(kwargs.keys()) == ["Basis"]:
+            raise KeyError("Only Basis accepted as dimension.")
+        
+        return super().__prepare__(name, bases, **kwargs)
+        
+
+class MetaProjectionDriver(MetaDriver):
+
+    @classmethod
+    def __prepare__(metacls, name, bases, **kwargs):
+
+        if not list(kwargs.keys()) == ["Basis", "Projection"]:
+            raise KeyError("Only Basis accepted as dimension.")
+        
+        return super().__prepare__(name, bases, **kwargs)
 
 
 
-class Driver(metaclass=DriverMeta):
 
-    _SPACES = ['Basis', 'Projection']
+class Driver(metaclass=MetaDriver):
 
-    def __init__(self, *args) -> None:
+    """
+    
+    """
+    
+    def __init__(self,
+                 name = None,
+                 description = None,
+                 **kwargs) -> None:
+        
+        self.name = name
+        self.description = description
 
-        spaces = [Space(*unitlist) for unitlist in args]
+        if self._DIMTYPES is not None:
+            if not set(kwargs.keys()) == set(self._DIMTYPES.keys()):
+                raise ValueError("Required dimensions not present.")
+            
+        self._DIMENSIONS = FLDict(*self._DIMTYPES.keys())
 
-        if self._SPACES:
-            self._dimensions = dict(zip(self._SPACES, spaces))
-        else: 
-            # if no spaces are provided, properties will also not be created
-            self._dimensions = dict(zip(np.arange(len(*args)), spaces))
+        # Also assert the correct types of units
+        for key, value in kwargs.items():  
+            for unit in value:
+                TYPECHECK(unit, Unit)
+            self._DIMENSIONS[key] = Space(*value)
 
-    def __validate__(self):
-
-        for space in self._dimensions.values():
-            TYPECHECK(space, Space)
-
-
-    def __repr__(self):
-
-        #         # return "Driver([{}])".format(*[repr(unit) for unit in self.__basis])
-        ## Adapt representation to work with lists.
+    @classmethod
+    def read_config(cls,
+                    configfile):
         pass
 
-
-class BaseDriver(Driver):
-
-    _SPACES = ["Basis"]
-
-    def __init__(self,
-                 basis: list) -> None:
-        
-        super().__init__(basis)
-
-class ProjectionDriver(Driver):
-
-    _SPACES = ["Basis", "Projection"]
-
-    def __init__(self,
-                 basis: list,
-                 projection: Unit) -> None:
-        
-        super().__init__(basis, [projection])
+    def write_config(self,
+                     configfile):
+        pass
+            
 
 
+class IRCurveDriver(Driver,
+                    metaclass=MetaProjectionDriver, 
+                    Basis=[DateUnit, TermUnit], 
+                    Projection=[RateUnit]):
+    """Driver to construct IR Curves.
+    
+    Dimensions
+    ----------
+    Basis: Space(DateUnit, TermUnit)
+    Projection: Space(RateUnit)
+    """
+
+class CalendarDriver(Driver,
+                     metaclass=MetaProjectionDriver,
+                     Basis=[DateUnit],
+                     Projection=[CashUnit]):
+    """Driver to construct Calendars.
+    
+    Dimensions
+    ----------
+    Basis: Space(DateUnit)
+    Projection: Space(CashUnit)
+    """
