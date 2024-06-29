@@ -125,55 +125,26 @@ class Driver(metaclass=MetaDriver):
             
 
 
-
 class IRCurveDriver(Driver,
                     metaclass=MetaProjectionDriver, 
                     Basis=[DateUnit, TermUnit], 
                     Projection=[RateUnit]):
-    pass
+    """Driver to construct IR Curves.
+    
+    Dimensions
+    ----------
+    Basis: Space(DateUnit, TermUnit)
+    Projection: Space(RateUnit)
+    """
 
 class CalendarDriver(Driver,
                      metaclass=MetaProjectionDriver,
                      Basis=[DateUnit],
                      Projection=[CashUnit]):
-    pass
-
-
-
-
-
-# def read_config(configfile) -> Driver:
-
-#     # read config file
-#     # from general, take attributes
-#     # Assert that all spaces are present
-#     # Assert that all spaces contain the required units
-#     # generate object
-#     # return object
-
-#     return True
-
-
-
-
-def read_config(configfile):
-
-    # read config file  
-    config = configparser.ConfigParser()
-    config.read(configfile)
-
-    # get general
-    general = dict(config["General"].items())
-    cls = globals()[general["type"]]
-    objname = general["name"]
-    if not issubclass(cls, Driver):
-        raise ValueError("Class is not Driverclass.")
-
-    space_sections = config.sections()
-    space_sections.remove("General")
-    for section in space_sections:
-        print(config[section].name)
-        units = list(config[section].values())
-        units = [exec(unit) for unit in units]
-        # unpack somehow
-        print(units)
+    """Driver to construct Calendars.
+    
+    Dimensions
+    ----------
+    Basis: Space(DateUnit)
+    Projection: Space(CashUnit)
+    """
