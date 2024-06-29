@@ -37,11 +37,3 @@ import numpy as np
 #         print(unitconventions.split(", "))
 
 
-driver = IRCurveDriver(Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
-                        Projection=[RateUnit("SPOT", "LINEAR", "Y")])
-
-
-
-
-
-print(struct._coords)
