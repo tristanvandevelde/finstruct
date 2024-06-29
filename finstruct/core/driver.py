@@ -9,7 +9,6 @@ from finstruct.utils.types import Meta, FLDict
 from finstruct.utils.checks import TYPECHECK
 from finstruct.core.space import Space
 
-
 class SpaceGetter(object):
     def __init__(self, name):
         self.name = name
