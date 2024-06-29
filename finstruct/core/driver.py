@@ -4,7 +4,7 @@ import configparser
 import inspect
 
 
-from finstruct.core.unit import Unit, DateUnit, TermUnit, RateUnit, CashUnit
+from finstruct.core.unit import Unit, DateUnit, TermUnit, RateUnit, CashUnit, MoneynessUnit, VolatilityUnit
 from finstruct.utils.types import Meta, FLDict
 from finstruct.utils.checks import TYPECHECK
 from finstruct.core.space import Space
@@ -139,6 +139,12 @@ class IRCurveDriver(Driver,
     Basis: Space(DateUnit, TermUnit)
     Projection: Space(RateUnit)
     """
+
+class VOLSurfaceDriver(Driver,
+                       metaclass=MetaProjectionDriver,
+                       Basis=[DateUnit, TermUnit, MoneynessUnit],
+                       Projection=[VolatilityUnit]):
+    """Driver to construct Volatility Surfaces."""
 
 class CalendarDriver(Driver,
                      metaclass=MetaProjectionDriver,

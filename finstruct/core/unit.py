@@ -244,6 +244,14 @@ class ProbabilityUnit(Unit):
 
     pass
 
+class MoneynessUnit(Unit):
+
+    pass
+
+class VolatilityUnit(Unit):
+
+    pass
+
 class GenericUnit(Unit):
 
     """Generic unit to be used in a general setting.

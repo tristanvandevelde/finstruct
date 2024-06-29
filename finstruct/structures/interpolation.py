@@ -3,6 +3,10 @@ from abc import ABCmeta
 import numpy as np
 import numpy.typing as npt
 
+"""
+Todo: rewrite in C++
+"""
+
 class Interpolation(metaclass=ABCmeta):
 
     def __init__(self,
