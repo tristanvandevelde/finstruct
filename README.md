@@ -30,17 +30,49 @@ graph TD;
     Convention-->Unit;
     Unit-->Space;
     Space-->Driver;
+    Driver-->Structure;
     Driver-->Environment;
     Environment-->Market;
     Environment-->Contract;
-    Market-->Product;
-    Contract-->Product;
-    Calendar-->Product;
     Driver-->Calendar;
-    Driver-->Point;
-    Driver-->Curve;
-    Driver-->Surface;
-    Product-->Bootstrap;
+    Structure-->Point;
+    Structure-->Curve;
+    Structure-->Surface;
+    Interpolation-->Structure;
+```
+
+### Driver
+
+```mermaid
+graph TD;
+    DriverMeta-->Driver;
+    Driver-->GenericDriver;
+    Driver-->BaseDriver;
+    Driver-->ProjectionDriver1D;
+    Driver-->UniverseDriver;
+    BaseDriver-->MarketDriver;
+    BaseDriver-->ContractDriver;
+    ProjectionDriver1D-->IRCurveDriver;
+    ProjectionDriver1D-->VOLSurfaceDriver;
+    ProjectionDriver1D-->FXDriver;
+    ProjectionDriver1D-->CalendarDriver;
+```
+
+### Driver
+
+```mermaid
+graph TD;
+    DriverMeta-->Driver;
+    Driver-->GenericDriver;
+    Driver-->BaseDriver;
+    Driver-->ProjectionDriver1D;
+    Driver-->UniverseDriver;
+    BaseDriver-->MarketDriver;
+    BaseDriver-->ContractDriver;
+    ProjectionDriver1D-->IRCurveDriver;
+    ProjectionDriver1D-->VOLSurfaceDriver;
+    ProjectionDriver1D-->FXDriver;
+    ProjectionDriver1D-->CalendarDriver;
 ```
 
 ### Driver
