@@ -22,28 +22,6 @@ from finstruct.core.driver import Driver
 # TODO:
 # idea - Structure will take over the function of driver.
 
-class StructureNew(metaclass=Meta):
-
-    _SPACES = {}
-
-    def __init__(self):
-
-        pass
-
-class BasisStructure(StructureNew):
-
-    _SPACES = {
-        "Basis": []
-    }
-
-class ProjectionStructure(StructureNew):
-
-    _SPACES = {
-        "Basis": [],
-        "Projection": []
-    }
-
-
 
 
 
@@ -77,30 +55,7 @@ class Structure:
 
         pass
 
-    def interpolate(self,
-                    coords):
-        
-        pass
 
-    def create_grid(self,
-                    *args):
-        
-        pass
-
-    def idx(self,
-            **kwargs):
-        
-        pass
-
-    def filter(self,
-               **kwargs):
-        
-        pass
-
-    def get_values(self,
-                   **kwargs):
-        
-        pass
 
 # class Structure:
 
