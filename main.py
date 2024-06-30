@@ -3,7 +3,7 @@ from numbers import Number
 
 from finstruct.core.unit import DateUnit, TermUnit, RateUnit
 from finstruct.core.driver import Driver, IRCurveDriver, VOLSurfaceDriver
-from finstruct.structures.structure import Structure
+from finstruct.structures.structure import Structure, StructArray
 from finstruct.structures.curve import IRCurve
 from finstruct.structures.surface import VOLSurface
 
@@ -42,25 +42,19 @@ import numpy as np
 
 driver = IRCurveDriver(Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
                        Projection=[RateUnit("SPOT", "LINEAR", "Y")])
-        
-coords = [
-    [np.datetime64(datetime.date(2000,1,1)), 1],
-    [np.datetime64(datetime.date(2000,1,1)), 10]
-]
-vals = [
+
+coords = {"Date":
+        [np.datetime64(datetime.date(2000,1,1)),
+        np.datetime64(datetime.date(2000,1,1))],
+        "Term":
+        [1, 10]}
+
+vals = {"Rate": [
     [0.1],
     [0.01]
-]
+]}
 
 struct = Structure(coords, vals, driver=driver, name="Teststruct")
 
 
-interp_coords = np.array([
-    (np.datetime64(datetime.date(2000,1,1)), 4),
-    (np.datetime64(datetime.date(2000,1,1)), 9)
-],
-dtype=struct._coords.dtype
-)
-
-print(struct._interpolate(interp_coords))
-
+struct.idx(Term=[1])

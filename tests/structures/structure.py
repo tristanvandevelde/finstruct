@@ -8,7 +8,7 @@ import pytest
 from finstruct.core.unit import DateUnit, TermUnit, RateUnit
 from finstruct.core.conventions import DaycountConvention, TermConvention
 from finstruct.core.driver import Driver, IRCurveDriver
-from finstruct.structures.structure_new import Structure
+from finstruct.structures.structure import Structure
 
 class TestStructure:
     

@@ -66,6 +66,23 @@ class Space(metaclass=Meta):
     def size(self):
 
         return len(self.units)
+    
+    def __getitem__(self,
+                    unitname):
+        
+        """
+        Get the unit
+        """
+        
+        return np.array([unit for unit in self.units if unit.name == unitname]).item()
+
+    def __setitem__(self,
+                    unitname,
+                    unitval):
+        
+        "To implement"
+        pass
+
 
     def convert(self,
                 **kwargs):
