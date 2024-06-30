@@ -62,33 +62,6 @@ class Calendar(Structure,
 #         #                         (self.cashunit.name, self.cashunit.dtype)])
 #         # self.data = np.array(list(zip(dates, values)), dtype=self.dtypes)        
 
-#     @classmethod
-#     def read_csv(cls,
-#                  file,
-#                  dateunit = None) -> None:
-        
-#         """Create Calendar object from a .csv-file.
-
-#         Parameters
-#         ----------
-#         file: str
-#             Location of the .csv-file.
-#         dateunit: DateUnit (optional)
-#             DateUnit to be used in the Calendar.
-
-#         Notes
-#         -----
-#         The .csv-file is expected to have the following headers: Date, Cashflow.
-#         """
-        
-#         with open(file=file, mode="r", encoding="utf-8-sig") as csvfile:
-#             reader = csv.DictReader(csvfile, delimiter=",")
-#             data = list(reader)
-
-#         dates = [row["Date"] for row in data]
-#         values = [row["Cashflow"] for row in data]
-        
-#         return cls(dates, values, dateunit=dateunit)
     
 #     @property
 #     def dates(self):

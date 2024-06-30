@@ -1,33 +1,13 @@
+import csv
 from collections import Counter
 
 import numpy as np
 import numpy.typing as npt
 from scipy.interpolate import RegularGridInterpolator
 
-
 from finstruct.utils.types import Meta
 from finstruct.utils.checks import TYPECHECK, LENCHECK
 from finstruct.core.driver import Driver
-
-# Add Structure metaclass to create properties for all variables.
-
-# Issue here can arise when a certain unit is present more than once
-# class AxisGetter(object):
-#     def __init__(self, name):
-#         self.name = name
-
-#     def __call__(self, owner):
-#         units = getattr(owner, "_DIMENSIONS")
-#         return units[self.name]
-    
-# class AxisSetter(object):
-#     def __init__(self, name):
-#         self.name = name
-
-#     def __call__(self, owner, value):
-#         units = getattr(owner, "_DIMENSIONS")
-#         units[self.name] = Space(*value) #value
-#         return setattr(owner, "_DIMENSIONS", units)
 
 # In __init__ of Structure:
 
@@ -139,13 +119,44 @@ class Structure(metaclass=Meta):
         return f"{self.__class__.__name__}({self.name}, {repr(self._driver)})"
 
     @classmethod
-    def read_csv(self,
+    def read_csv(cls,
                  csvfile,
-                 driver):
+                 driver,
+                 **kwargs):
         
         """
         Read from csvfile.
         """
+
+        """Create Structure object from a .csv-file and driver object (can later be config file).
+
+        Parameters
+        ----------
+        csvfile: str
+            Location of the .csv-file.
+        driver: Driver
+            Driver to drive the structure.
+
+        Notes
+        -----
+        The .csv-file is expected to have as headers all the units present in the Driver.
+        """
+        
+        with open(file=csvfile, mode="r", encoding="utf-8-sig") as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=",")
+            data = list(reader)
+        
+        coords = {}
+        for unitname in driver.Basis.names:
+            coords = {**coords, **{unitname: [row[unitname] for row in data]}}
+
+        values = {}
+        for unitname in driver.Projection.names:
+            values = {**values, **{unitname: [row[unitname] for row in data]}}
+
+        return cls(coords, values, driver, **kwargs)
+
+
 
     def _set_interpolators(self) -> None:
         

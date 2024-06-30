@@ -125,6 +125,11 @@ class Driver(metaclass=MetaDriver):
     def write_config(self,
                      configfile):
         pass
+
+    @property
+    def units(self):
+
+        """Return all units in all dimensions."""
             
 
 

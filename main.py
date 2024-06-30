@@ -54,14 +54,7 @@ vals = {"Rate": [
     0.01
 ]}
 
-struct = Structure(coords, vals, driver=driver, name="Teststruct")
+#struct = Structure(coords, vals, driver=driver, name="Teststruct")
 
-
-
-
-
-
-vals = struct.get_values(Term=[1, 10], Date=np.datetime64(datetime.date(2000,1,1)))
-print(vals)
-
-t = struct[1]
+struct2 = Structure.read_csv("data/curve1.csv", driver)
+print(struct2)
