@@ -3,7 +3,7 @@ from collections import Counter
 
 import numpy as np
 import numpy.typing as npt
-from scipy.interpolate import RegularGridInterpolator
+from scipy.interpolate import interpn, RegularGridInterpolator, CubicSpline
 
 from finstruct.utils.types import Meta
 from finstruct.utils.checks import TYPECHECK, LENCHECK
@@ -192,6 +192,7 @@ class Structure(metaclass=Meta):
 
         index_vars = [var for var in self._driver.Basis.names if var not in self.__interpolate__]
         unique_index_vals = np.unique([value for key, value in kwargs.items() if key in index_vars])
+
         # Somehow check that this is 1 dimensional
         idx = self._idx(**dict(zip(index_vars, unique_index_vals)))
         if idx.sum() == 0:
@@ -200,17 +201,18 @@ class Structure(metaclass=Meta):
         coords_input = {key: value for key, value in self._coords.select(idx).items() if key in self.__interpolate__}
         coords_input = np.array(list(coords_input.values()), dtype=np.float64).T
         
-        values_input = np.array(list(self._vals.select(idx).values()), dtype=np.float64)
-
-        interpolator = RegularGridInterpolator(coords_input.T, values_input.T, method="linear")
+        values_input = np.array(list(self._vals.select(idx).values()), dtype=np.float64).T
 
         # really improve this stuff
         coords_output = {key: value for key, value in kwargs.items() if key in self.__interpolate__}
         coords_output = np.array(list(coords_output.values()), dtype=np.float64).T
 
-        result = interpolator(coords_output)
+        cs = CubicSpline(coords_input.T.flatten(), values_input.T.flatten())
+
+        result = cs(coords_output.T.flatten(), 2)
 
         return result
+
     
     def get_values(self,
                    **kwargs):
@@ -232,17 +234,15 @@ class Structure(metaclass=Meta):
 
         grid = self._create_grid(*values)
         results = np.empty(len(grid), dtype=dict)
-        print(results)
-        for idx, value in enumerate(grid):
-            print(idx)
-            print(value)
+        for idx_outer, value in enumerate(grid):
             conditions = dict(zip(names, value))
             idx = self._idx(**conditions)
             if idx.any():
                 val = self._vals.select(idx)
+                results[idx_outer] = {**conditions, **val}
             else:
-                val = self._interpolate(**kwargs)
-            results[idx] = {**conditions, **val}
+                val = self._interpolate(**dict(zip(names, value)))
+                results[idx_outer] = {**conditions, **{"Rate": val}}
 
         return results
 

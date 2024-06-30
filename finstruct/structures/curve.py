@@ -61,6 +61,20 @@ class IRCurve(Structure,
                 Plot the term structure of the rates.
                 """
                 date = kwargs["Date"]
+                terms = np.arange(1, 31)
+
+                data = self.get_values(Date=date, Term=terms)
+                terms = np.array([point["Term"] for point in data]).flatten()
+                rates = np.array([point["Rate"] for point in data]).flatten()
+
+                ## TODO: Fix why rates are stored in singletons
+
+
+
+
+                plt.plot(terms, rates)
+                plt.show()
+
                 #     if len(dates) != 1:
                 #      raise ValueError("Can only plot for 1 date")
                 # except:
@@ -68,13 +82,13 @@ class IRCurve(Structure,
                 # finally:
 
                     #for date in dates:
-                idx = self._idx(Date=date)
-                terms = self._coords.select(idx)["Term"]
-                rates = self._vals.select(idx)["Rate"]
-                plt.plot(terms, rates, label=date)
-                plt.legend()
-                plt.title(self.name)
-                plt.show()
+                # idx = self._idx(Date=date)
+                # terms = self._coords.select(idx)["Term"]
+                # rates = self._vals.select(idx)["Rate"]
+                # plt.plot(terms, rates, label=date)
+                # plt.legend()
+                # plt.title(self.name)
+                # plt.show()
 
 
 

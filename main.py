@@ -10,6 +10,7 @@ from finstruct.structures.surface import VOLSurface
 import datetime
 
 import numpy as np
+import pandas as pd
 
 
 # import configparser
@@ -44,6 +45,16 @@ driver = IRCurveDriver(Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
                        Projection=[RateUnit("SPOT", "LINEAR", "Y")])
 
 
+curve = IRCurve.read_csv("data/treasury_rates.csv", driver)
+curve.plot("termstructure", Date=np.datetime64("2024-06-10"))
 
-curve = IRCurve.read_csv("data/curve1.csv", driver)
-curve.plot("termstructure", Date=np.datetime64("2000-01-01"))
+# ent = np.array([[1, 2],
+#  [3, 4], [5, 6]])
+
+# for idx, b in enumerate(ent):
+#     print(idx)
+#     print(b)
+
+# print(type(ent[0]))
+# print(len(ent))
+
