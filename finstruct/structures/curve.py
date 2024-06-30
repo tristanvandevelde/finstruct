@@ -31,7 +31,6 @@ class IRCurve(Structure,
                  name = None) -> None:
         
         super().__init__(data_coords, data_vals, driver, name)
-        self.set_interpolators("Term")
 
     def plot(self,
              type: str,
@@ -45,33 +44,34 @@ class IRCurve(Structure,
                 Plot the historical evolution of the rates.
                 """
                 # fix color for terms
-                terms = list(kwargs["Terms"])
-                if not terms:
-                    terms = self._coords["Term"].unique()
-                for term in terms:
-                    idx = self.idx(Date=kwargs["Date"], Term=term)
-                    plt.plot(self._coords[idx]["Date"], self._vals[idx]["Rate"], label=term)
-                plt.legend()
-                plt.title(self.name)
-                plt.show()
+                try:
+                    terms = list(kwargs["Terms"])
+                except:
+                    terms = np.unique(self._coords._data["Term"])
+                finally:
+                    for term in terms:
+                        idx = self._idx(Term=term)
+                        plt.plot(self._coords.select(idx)["Date"], self._vals.select(idx)["Rate"], label=term)
+                    plt.legend()
+                    plt.title(self.name)
+                    plt.show()
 
             case "termstructure":
                 """
                 Plot the term structure of the rates.
                 """
-                dates = list(kwargs["Date"])
-                if not date:
-                    raise ValueError("No date given.")
-                if len(date) != 1:
-                    raise ValueError("Can only plot for 1 date")
-                if kwargs["Term"]:
-                    raise ValueError("Can only plot for all terms")
+                date = kwargs["Date"]
+                #     if len(dates) != 1:
+                #      raise ValueError("Can only plot for 1 date")
+                # except:
+                #     raise ValueError("No date given.")
+                # finally:
 
-                for date in dates:
-                    idx = self.idx(Date=date)
-                    terms = self._coords[idx]["Term"]
-                    rates = self._coords[idx]["Rate"]
-                    plt.plot(terms, rates, label=date)
+                    #for date in dates:
+                idx = self._idx(Date=date)
+                terms = self._coords.select(idx)["Term"]
+                rates = self._vals.select(idx)["Rate"]
+                plt.plot(terms, rates, label=date)
                 plt.legend()
                 plt.title(self.name)
                 plt.show()

@@ -43,18 +43,7 @@ import numpy as np
 driver = IRCurveDriver(Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
                        Projection=[RateUnit("SPOT", "LINEAR", "Y")])
 
-coords = {"Date":
-        [np.datetime64(datetime.date(2000,1,1)),
-        np.datetime64(datetime.date(2000,1,1))],
-        "Term":
-        [1, 10]}
 
-vals = {"Rate": [
-    0.1,
-    0.01
-]}
 
-#struct = Structure(coords, vals, driver=driver, name="Teststruct")
-
-struct2 = Structure.read_csv("data/curve1.csv", driver)
-print(struct2)
+curve = IRCurve.read_csv("data/curve1.csv", driver)
+curve.plot("termstructure", Date=np.datetime64("2000-01-01"))
