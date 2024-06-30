@@ -7,6 +7,8 @@ from finstruct.utils.types import Meta
 from finstruct.utils.checks import TYPECHECK, LENCHECK
 from finstruct.core.driver import Driver
 
+# Add Structure metaclass to create properties for all variables.
+
 class Structure(metaclass=Meta):
 
     """Structure class.
@@ -109,9 +111,18 @@ class Structure(metaclass=Meta):
         For given conditions on each variable, extract the observations adhering to these.
         """
 
-        result = self._vals[idx]
+        coords = self._coords[idx].copy()
+        coords = coords.view(type=np.matrix).reshape(coords.shape + (-1,))
 
-        return result.view(type=np.matrix, dtype=np.float64).reshape(result.shape + (-1,))
+        vals = self._vals[idx].copy()
+        vals = vals.view(type=np.matrix, dtype=np.float64).reshape(vals.shape + (-1,))
+
+        return coords, vals
+    
+    def format(self,
+               *args):
+        
+        pass
     
     def interpolate(self,
                     coords: npt.ArrayLike):
@@ -130,6 +141,10 @@ class Structure(metaclass=Meta):
     def get_values(self,
                    **kwargs):
         
+        """
+        How to solve: ideally, all Basis variables should be provided.
+        """
+        
         kwargs = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
 
         # TODO: How so solve for variables that have not been given?
@@ -143,7 +158,7 @@ class Structure(metaclass=Meta):
             conditions = dict(zip(names, value))
             idx = self.idx(**conditions)
             if idx.any():
-                val = self.filter(idx)
+                _, val = self.filter(idx)
                 print(val)
             else:
                 print("Require interpolation")

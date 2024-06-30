@@ -1,26 +1,81 @@
 # import csv
 
-# import numpy as np
-# import numpy.typing as npt
-# import matplotlib.pyplot as plt
+import numpy as np
+import numpy.typing as npt
+import matplotlib.pyplot as plt
 
-# from finstruct.strstructure import Basis, Structure
-# from finstruct.unit import TermUnit, DateUnit, RateUnit
+from finstruct.utils.types import Meta
+from finstruct.core.driver import IRCurveDriver
+from finstruct.structures.structure import Structure
 
+class IRCurve(Structure,
+              metaclass=Meta):
 
+    """Interest Rate Curve class. 
 
+    Attributes
+    ----------
 
-# class IRCurve(Structure):
+    Methods
+    -------
+    
+    """
 
-#     DEFAULTS = { "BASIS": Basis([DateUnit(None), TermUnit("D")], RateUnit("SPOT"))}
-           
+    _DRIVERTYPE = IRCurveDriver
 
-#     def __init__(self,
-#                  coords,
-#                  data,
-#                  basis: Basis = None):
+    def __init__(self,
+                 data_coords,
+                 data_vals,
+                 driver: IRCurveDriver,
+                 name = None) -> None:
         
-#         super().__init__(coords, data, basis)
+        super().__init__(data_coords, data_vals, driver, name)
+        self.set_interpolators("Term")
+
+    def plot(self,
+             type: str,
+             **kwargs) -> None:
+        
+        kwargs = {key: value for key, value in kwargs.items() if key in ["Term", "Date"]}
+        
+        match type:
+            case "history":
+                """
+                Plot the historical evolution of the rates.
+                """
+                # fix color for terms
+                terms = list(kwargs["Terms"])
+                if not terms:
+                    terms = self._coords["Term"].unique()
+                for term in terms:
+                    idx = self.idx(Date=kwargs["Date"], Term=term)
+                    plt.plot(self._coords[idx]["Date"], self._vals[idx]["Rate"], label=term)
+                plt.legend()
+                plt.title(self.name)
+                plt.show()
+
+            case "termstructure":
+                """
+                Plot the term structure of the rates.
+                """
+                dates = list(kwargs["Date"])
+                if not date:
+                    raise ValueError("No date given.")
+                if len(date) is not 1:
+                    raise ValueError("Can only plot for 1 date")
+                if kwargs["Term"]:
+                    raise ValueError("Can only plot for all terms")
+
+                for date in dates:
+                    idx = self.idx(Date=date)
+                    terms = self._coords[idx]["Term"]
+                    rates = self._coords[idx]["Rate"]
+                    plt.plot(terms, rates, label=date)
+                plt.legend()
+                plt.title(self.name)
+                plt.show()
+
+
 
 #     def get_fwd(self,
 #                 terms: npt.ArrayLike,
@@ -46,85 +101,12 @@
 
 #         return disc_factors
     
-#     def plot(self,
-#              type: str = None,
-#              **kwargs):
-        
-#         """
-        
-#         """
-#           kwargs = conditions
-        
-#         match type:
-#             case "history":
-#                 """
-                
-#                 """
-#             case "termstructure":
-#                 """
-#                 Plot the relationship between the terms and the rates.
-        
-#                 """
-#             ## TODO: Implement for multiple curves way to combine these.
-
-#         idx = self.idx(**kwargs)
-#         coords = self.coords[idx].view(np.float64)
-#         values = self.values[idx].view(np.float64)
-
-#         plt.plot(coords, values)
-#         plt.show()
 
 
-# class IRBaseCurve(Structure):
 
-#     """
-#     Interest rate Base Curve class to represt a termstructure at 1 moment in time.
-#     """
 
-#     DEFAULTS = { 
-#         "BASIS": Basis([TermUnit("Y")], RateUnit("SPOT"))
-#     }
 
-#     def __init__(self,
-#                  terms,
-#                  rates,
-#                  basis = None):
-        
-#         if basis is None:
-#             basis = self.DEFAULTS["BASIS"]
-        
-#         super().__init__(terms, rates, basis)
-
-#     def shift(self):
-#         pass
-
-#     @classmethod
-#     def read_csv(cls,
-#                  file,
-#                  basis = None):
-        
-#         with open(file=file, mode="r", encoding="utf-8-sig") as csvfile:
-#             reader = csv.DictReader(csvfile, delimiter=",")
-#             data = list(reader)
-
-#         terms = [row["term"] for row in data]
-#         rates = [row["rate"] for row in data]
-
-#         return cls(terms, rates, basis)
-    
-# class IRMultiCurve:
-
-#     """
-#     Class to hold information about multiple curves.
-#     Maybe should be in a general universe-type class, allowing combination of different drivers.
-#     """
+# class Spread:
 
 #     pass
 
-# class Movement:
-
-#     pass
-
-# class Shift(Movement):
-
-#     pass
