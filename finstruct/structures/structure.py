@@ -23,11 +23,13 @@ class Structure(metaclass=Meta):
     """
 
     _DRIVERTYPE = Driver
+    # _DEFAULTDRIVER = None
+    _DEFAULTDRIVER = f"{__name__}Default"
 
     def __init__(self,
                  data_coords,
                  data_vals,
-                 driver: Driver,
+                 driver: Driver = None,
                  name = None) -> None:
         
         """
@@ -46,7 +48,11 @@ class Structure(metaclass=Meta):
         """
 
         self.name = name
-        self._driver = driver
+        
+        if driver is None:
+            self._driver = Driver.read_config(f"config/drivers/{self._DEFAULTDRIVER}.ini")
+        else:
+            self._driver = driver
 
         self._coords = np.core.records.fromarrays(np.asarray(data_coords).transpose(),
                                                   names = self._driver.Basis.names,
@@ -69,6 +75,14 @@ class Structure(metaclass=Meta):
 
         TYPECHECK(self._driver, self._DRIVERTYPE)
         LENCHECK(self._coords, self._vals)
+
+    @classmethod
+    def read_csv(self,
+                 csvfile):
+        
+        """
+        Read from csvfile.
+        """
 
     def set_interpolators(self,
                             *args):

@@ -10,4 +10,5 @@ class VOLSurface(Structure,
                  metaclass=Meta):
 
     _DRIVERTYPE = VOLSurfaceDriver
+    _DEFAULTDRIVER = "VOLSurfaceDefault"
 

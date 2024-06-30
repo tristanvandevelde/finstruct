@@ -1,8 +1,9 @@
 
 from finstruct.core.unit import DateUnit, TermUnit, RateUnit
-from finstruct.core.driver import Driver, IRCurveDriver
-#from finstruct.core.driver import CalendarDriver, read_config
-from finstruct.structures.structure_new import Structure
+from finstruct.core.driver import Driver, IRCurveDriver, VOLSurfaceDriver
+from finstruct.structures.structure import Structure
+from finstruct.structures.curve import IRCurve
+from finstruct.structures.surface import VOLSurface
 
 import datetime
 

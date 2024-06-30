@@ -22,6 +22,7 @@ class IRCurve(Structure,
     """
 
     _DRIVERTYPE = IRCurveDriver
+    _DEFAULTDRIVER = "IRCurveDefault"
 
     def __init__(self,
                  data_coords,
@@ -61,7 +62,7 @@ class IRCurve(Structure,
                 dates = list(kwargs["Date"])
                 if not date:
                     raise ValueError("No date given.")
-                if len(date) is not 1:
+                if len(date) != 1:
                     raise ValueError("Can only plot for 1 date")
                 if kwargs["Term"]:
                     raise ValueError("Can only plot for all terms")
