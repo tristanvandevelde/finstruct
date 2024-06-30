@@ -9,6 +9,30 @@ from finstruct.core.driver import Driver
 
 # Add Structure metaclass to create properties for all variables.
 
+# Issue here can arise when a certain unit is present more than once
+# class AxisGetter(object):
+#     def __init__(self, name):
+#         self.name = name
+
+#     def __call__(self, owner):
+#         units = getattr(owner, "_DIMENSIONS")
+#         return units[self.name]
+    
+# class AxisSetter(object):
+#     def __init__(self, name):
+#         self.name = name
+
+#     def __call__(self, owner, value):
+#         units = getattr(owner, "_DIMENSIONS")
+#         units[self.name] = Space(*value) #value
+#         return setattr(owner, "_DIMENSIONS", units)
+
+# In __init__ of Structure:
+
+        # create properties for unit values
+        # for unit in self._driver:
+        #     property()
+
 class Structure(metaclass=Meta):
 
     """Structure class.
@@ -24,13 +48,15 @@ class Structure(metaclass=Meta):
 
     _DRIVERTYPE = Driver
     # _DEFAULTDRIVER = None
-    _DEFAULTDRIVER = f"{__name__}Default"
+    _DEFAULTDRIVER = "StructureDefault"
+    _DEFAULTINTERPOLATION = RegularGridInterpolator
 
     def __init__(self,
                  data_coords,
                  data_vals,
                  driver: Driver = None,
-                 name = None) -> None:
+                 name = None,
+                 interpolator = None) -> None:
         
         """
         Initialize Structure.
@@ -62,19 +88,21 @@ class Structure(metaclass=Meta):
                                                 names = self._driver.Projection.names,
                                                 formats = self._driver.Projection.dtypes)
         
-        # create properties for unit values
-        # for unit in self._driver:
-        #     property()
+        if interpolator is None:
+            interpolator = self._DEFAULTINTERPOLATION
+        self.interpolation = interpolator
 
-        self.interpolation = RegularGridInterpolator
-        self.__interpolate__ = [] # list of coordinate units to allow interpolation over.
-        # As standard, set all numeric units in the basis driver.
+        self._set_interpolators()
 
         
     def __validate__(self):
 
         TYPECHECK(self._driver, self._DRIVERTYPE)
         LENCHECK(self._coords, self._vals)
+
+    def __repr__(self):
+
+        return f"{self.__class__.__name__}({self.name}, {repr(self._driver)})"
 
     @classmethod
     def read_csv(self,
@@ -84,12 +112,16 @@ class Structure(metaclass=Meta):
         Read from csvfile.
         """
 
-    def set_interpolators(self,
-                            *args):
+    def _set_interpolators(self) -> None:
         
-        args = [unitname for unitname in args if unitname in self._driver.Basis.names]
+        args = [unitname for unitname, dtype in zip(self._driver.Basis.names, self._driver.Basis.dtypes) if np.dtype(dtype) == "d"]
+
+        # else:
+        #     args = [unitname for unitname in args if unitname in self._driver.Basis.names]
 
         self.__interpolate__ = args
+
+        
 
     @property
     def ndim(self):
@@ -138,19 +170,51 @@ class Structure(metaclass=Meta):
         
         pass
     
-    def interpolate(self,
-                    coords: npt.ArrayLike):
+    def _interpolate(self,
+                     coords: npt.ArrayLike):
         
-        coords_input = np.array(self._coords[self.__interpolate__].copy(), dtype=np.float64)
-        coords_input = coords_input.reshape(coords_input.shape + (-1,))
+        """
+        Should take in an array with values of all the units in the basis.
+        """
 
-        values_input = np.array(self._vals["Rate"].copy(), dtype=np.float64)
-        values_input = values_input.reshape(values_input.shape + (-1,))
+        # First, we need to group by values of non-interpolating variables.
+        # These will create the input data for the interpolator
+        # Then construct the interpolator
+        # Then interpolate the other variables.
+        # This will be rather loopy, so might need to move to C++.
+        length = np.asarray(coords.shape).item()
+        dimension = self._driver.Projection.size
+        if dimension != 1:
+            raise NotImplementedError("Multivariate interpolation not supported")
 
-        interpolator = RegularGridInterpolator(coords_input.T, values_input, method="linear")
+        result = np.empty((length, dimension))
 
+        index_vars = [var for var in self._driver.Basis.names if var not in self.__interpolate__]
 
-        return interpolator(coords)
+        unique_index_vars = np.unique(coords[index_vars])
+        print(unique_index_vars)
+        print(self._coords[index_vars])
+        for combination in unique_index_vars:
+
+            idx = (self._coords[index_vars] == combination)
+            if idx.sum() == 0:
+                raise ValueError("Can't interpolate on index variables.")
+            
+            coords_input = np.array(self._coords[idx][self.__interpolate__].copy(), dtype=np.float64)
+            coords_input = coords_input.reshape(coords_input.shape + (-1,))
+
+            # For multivariate interpolation, here we still need to loop over the values.
+            values_input = np.array(self._vals[idx]["Rate"].copy(), dtype=np.float64)
+            values_input = values_input.reshape(values_input.shape + (-1,))
+
+            interpolator = RegularGridInterpolator(coords_input.T, values_input, method="linear")
+
+            coords_output = np.array(coords[idx][self.__interpolate__], dtype=np.float64)
+            coords_output = coords_output.reshape(coords_output.shape + (-1,))
+
+            result[idx] = interpolator(coords_output)
+
+        return result
     
     def get_values(self,
                    **kwargs):

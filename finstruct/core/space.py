@@ -61,6 +61,11 @@ class Space(metaclass=Meta):
         """
 
         return [unit.name for unit in self.units]
+    
+    @property
+    def size(self):
+
+        return len(self.units)
 
     def convert(self,
                 **kwargs):
