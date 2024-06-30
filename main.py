@@ -50,11 +50,18 @@ coords = {"Date":
         [1, 10]}
 
 vals = {"Rate": [
-    [0.1],
-    [0.01]
+    0.1,
+    0.01
 ]}
 
 struct = Structure(coords, vals, driver=driver, name="Teststruct")
 
 
-struct.idx(Term=[1])
+
+
+
+
+vals = struct.get_values(Term=[1, 10], Date=np.datetime64(datetime.date(2000,1,1)))
+print(vals)
+
+t = struct[1]

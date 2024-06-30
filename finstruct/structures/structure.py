@@ -1,3 +1,5 @@
+from collections import Counter
+
 import numpy as np
 import numpy.typing as npt
 from scipy.interpolate import RegularGridInterpolator
@@ -61,31 +63,15 @@ class StructArray(object,
 
         ## Also make sure that every array has the same length.
 
-    def __getitem__(self,
-                    idx):
-        """
-        Return the observations adhering to this stuff.
-        """
+
+    def select(self,
+               index):
         
-        return {key: value[idx] for key, value in self._data.items()}
-    
-    def __getslice__(self):
+        return {key: value[index] for key, value in self._data.items()}
+ 
+    def __len__(self):
 
-        """
-        Return all data when using the slice.
-        """
-
-        return self._data
-
-    def __setitem__(self,
-                    *args):
-        
-        raise NotImplementedError
-    
-    @property
-    def len(self):
-
-        return np.array([len(arr) for arr in self._data.values()]).item()
+        return np.array([len(arr) for arr in self._data.values()][0])
 
 class Structure(metaclass=Meta):
 
@@ -101,7 +87,6 @@ class Structure(metaclass=Meta):
     """
 
     _DRIVERTYPE = Driver
-    # _DEFAULTDRIVER = None
     _DEFAULTDRIVER = "StructureDefault"
     _DEFAULTINTERPOLATION = RegularGridInterpolator
 
@@ -111,11 +96,6 @@ class Structure(metaclass=Meta):
                  driver: Driver,
                  name = None,
                  interpolator = None) -> None:
-        
-        ## TODO:
-        # Maybe should change to dicts of 1D numpy arrays
-
-        #self._coords = dict(zip(driver.Basis.names), np.array())
         
         """
         Initialize Structure.
@@ -141,14 +121,6 @@ class Structure(metaclass=Meta):
 
         self._coords = StructArray(coords_dictdata, self._driver.Basis)
         self._vals = StructArray(values_dictdata, self._driver.Projection)
-
-        # self._coords = np.core.records.fromarrays(np.asarray(data_coords).transpose(),
-        #                                           names = self._driver.Basis.names,
-        #                                           formats = self._driver.Basis.dtypes)
-        
-        # self._vals = np.core.records.fromarrays(np.asarray(data_vals).transpose(),
-        #                                         names = self._driver.Projection.names,
-        #                                         formats = self._driver.Projection.dtypes)
         
         if interpolator is None:
             interpolator = self._DEFAULTINTERPOLATION
@@ -160,22 +132,16 @@ class Structure(metaclass=Meta):
     def __validate__(self):
 
         TYPECHECK(self._driver, self._DRIVERTYPE)
-        # LENCHECK(self._coords, self._vals)
+        LENCHECK(self._coords, self._vals)
 
     def __repr__(self):
 
         return f"{self.__class__.__name__}({self.name}, {repr(self._driver)})"
-    
-    @property
-    def coords(self):
-        pass
-
-    def vals(self):
-        pass
 
     @classmethod
     def read_csv(self,
-                 csvfile):
+                 csvfile,
+                 driver):
         
         """
         Read from csvfile.
@@ -190,29 +156,8 @@ class Structure(metaclass=Meta):
 
         self.__interpolate__ = args
 
-    # @property
-    # def ndim(self):
-
-    #     ndim = {
-    #         "Basis": self._coords.shape,
-    #         "Projection": self._values.shape
-    #     }
-
-    #     return ndim
-    
-    # def __get__(self,
-    #             **kwargs):
-        
-    #     # fill in with basis variables
-    #     kwargs = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
-    #     missing_variables = [name for name in self._driver.Basis.names if name not in kwargs.keys()]
-    #     for var in missing_variables:
-    #         kwargs[var] = np.unique(self._coords[var])
-
-    #     return self.get_values(**kwargs)
-
-    def idx(self,
-            **kwargs):
+    def _idx(self,
+             **kwargs):
         
         """
         Given the conditions on each variable, return the index of the observations adhering to this.
@@ -221,114 +166,85 @@ class Structure(metaclass=Meta):
         conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Basis.names}
 
 
-        idx = np.array([np.isin(self._coords[:][str(variable)], condition) for variable, condition in conditions.items()])
+        idx = np.array([np.isin(self._coords._data[str(variable)], condition) for variable, condition in conditions.items()])
         idx = np.array([all(tup) for tup in zip(*idx)])
 
-        print(idx)
+        return idx
 
-    #     return idx
-
-    # def filter(self,
-    #            idx):
-        
-    #     """
-    #     For given conditions on each variable, extract the observations adhering to these.
-    #     """
-
-    #     coords = self._coords[idx].copy()
-    #     coords = coords.view(type=np.matrix).reshape(coords.shape + (-1,))
-
-    #     vals = self._vals[idx].copy()
-    #     vals = vals.view(type=np.matrix, dtype=np.float64).reshape(vals.shape + (-1,))
-
-    #     return coords, vals
     
-    def format(self,
-               *args):
+    def _interpolate(self,
+                     **kwargs):
         
-        pass
+        """
+        Should take in a dict with values of all the units in the basis.
+        """
+
+        index_vars = [var for var in self._driver.Basis.names if var not in self.__interpolate__]
+        unique_index_vals = np.unique([value for key, value in kwargs.items() if key in index_vars])
+        # Somehow check that this is 1 dimensional
+        idx = self._idx(**dict(zip(index_vars, unique_index_vals)))
+        if idx.sum() == 0:
+            raise ValueError("Can't interpolate on index variables.")
+        
+        coords_input = {key: value for key, value in self._coords.select(idx).items() if key in self.__interpolate__}
+        coords_input = np.array(list(coords_input.values()), dtype=np.float64).T
+        
+        values_input = np.array(list(self._vals.select(idx).values()), dtype=np.float64)
+
+        interpolator = RegularGridInterpolator(coords_input.T, values_input.T, method="linear")
+
+        # really improve this stuff
+        coords_output = {key: value for key, value in kwargs.items() if key in self.__interpolate__}
+        coords_output = np.array(list(coords_output.values()), dtype=np.float64).T
+
+        result = interpolator(coords_output)
+
+        return result
     
-    # def _interpolate(self,
-    #                  coords: npt.ArrayLike):
+    def get_values(self,
+                   **kwargs):
         
-    #     """
-    #     Should take in an array with values of all the units in the basis.
-    #     """
-
-    #     # First, we need to group by values of non-interpolating variables.
-    #     # These will create the input data for the interpolator
-    #     # Then construct the interpolator
-    #     # Then interpolate the other variables.
-    #     # This will be rather loopy, so might need to move to C++.
-    #     length = np.asarray(coords.shape).item()
-    #     dimension = self._driver.Projection.size
-    #     if dimension != 1:
-    #         raise NotImplementedError("Multivariate interpolation not supported")
-
-    #     result = np.empty((length, dimension))
-
-    #     index_vars = [var for var in self._driver.Basis.names if var not in self.__interpolate__]
-
-    #     unique_index_vars = np.unique(coords[index_vars])
-
-    #     for combination in unique_index_vars:
-
-    #         idx = (self._coords[index_vars] == combination)
-    #         if idx.sum() == 0:
-    #             raise ValueError("Can't interpolate on index variables.")
-            
-    #         coords_input = np.array(self._coords[idx][self.__interpolate__].copy(), dtype=np.float64)
-    #         coords_input = coords_input.reshape(coords_input.shape + (-1,))
-
-    #         # For multivariate interpolation, here we still need to loop over the values.
-    #         values_input = np.array(self._vals[idx]["Rate"].copy(), dtype=np.float64)
-    #         values_input = values_input.reshape(values_input.shape + (-1,))
-
-    #         interpolator = RegularGridInterpolator(coords_input.T, values_input, method="linear")
-
-    #         coords_output = np.array(coords[idx][self.__interpolate__], dtype=np.float64)
-    #         coords_output = coords_output.reshape(coords_output.shape + (-1,))
-
-    #         result[idx] = interpolator(coords_output)
-
-    #     return result
-    
-    # def get_values(self,
-    #                **kwargs):
+        """
+        In this function, all Basis variables are assumed to be given.
+        """
         
-    #     """
-    #     In this function, all Basis variables are assumed to be given.
-    #     """
+        kwargs = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
+        if not Counter(list(kwargs.keys())) == Counter(self._driver.Basis.names):
+            raise ValueError("All Basis variables need to be present.")
+            # fill in with basis variables
+            # missing_variables = [name for name in self._driver.Basis.names if name not in kwargs.keys()]
+            # for var in missing_variables:
+            #     kwargs[var] = np.unique(self._coords[var])
+
+        names = list(kwargs.keys())
+        values = list(kwargs.values())
+
+        grid = self._create_grid(*values)
+        results = np.empty(len(grid), dtype=dict)
+        print(results)
+        for idx, value in enumerate(grid):
+            print(idx)
+            print(value)
+            conditions = dict(zip(names, value))
+            idx = self._idx(**conditions)
+            if idx.any():
+                val = self._vals.select(idx)
+            else:
+                val = self._interpolate(**kwargs)
+            results[idx] = {**conditions, **val}
+
+        return results
+
+    def _create_grid(self,
+                    *args):
         
-    #     kwargs = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
-    #     if not list(kwargs.keys()) == self._driver.Basis.names:
-    #         raise ValueError("All Basis variables need to be present.")
+        """
+        Each arg represents a variable for which we require the given values in a full grid.
+        """
 
-    #     names = list(kwargs.keys())
-    #     values = list(kwargs.values())
-
-    #     grid = self.create_grid(*values)
-    #     print(grid)
-    #     for value in grid:
-    #         conditions = dict(zip(names, value))
-    #         idx = self.idx(**conditions)
-    #         if idx.any():
-    #             _, val = self.filter(idx)
-    #             print(val)
-    #         else:
-    #             print("Require interpolation")
-
-
-    # def create_grid(self,
-    #                 *args):
+        grid = np.meshgrid(*args, indexing='ij')
+        grid = np.array(grid).reshape(len(args),-1).T
         
-    #     """
-    #     Each arg represents a variable for which we require the given values in a full grid.
-    #     """
-
-    #     grid = np.meshgrid(*args, indexing='ij')
-    #     grid = np.array(grid).reshape(len(args),-1).T
-        
-    #     return grid
+        return grid
 
     
