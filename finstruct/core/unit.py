@@ -51,6 +51,7 @@ class Unit:
     ctypes = []
     
     DEFAULTS = {}
+    _default_vals = []
 
     def __init__(self,
                  *args) -> None:

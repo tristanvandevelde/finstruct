@@ -25,7 +25,7 @@ class StructArray(object,
 
     def __init__(self,
                  dictdata,
-                 space):
+                 dicttypes):
         
         """
         Data must be passed as dict somehow, to allow for:
@@ -33,7 +33,8 @@ class StructArray(object,
         2. mapping to the space
         # """
 
-        self._data = {key: np.array(value, dtype=np.dtype(space[key].dtype)) for key, value in dictdata.items()}
+        self._types = dicttypes
+        self._data = {key: np.array(value, dtype=np.dtype(dicttypes[key])) for key, value in dictdata.items() if key in self._types.keys()}
 
     def __validate__(self):
 
@@ -43,11 +44,20 @@ class StructArray(object,
 
         ## Also make sure that every array has the same length.
 
+    def __getitem__(self,
+                    items):
+        
+        items = np.asarray(items)
+        return [self._data[item] for item in items] # return list of np arrays
+        
+
 
     def select(self,
                index):
         
-        return {key: value[index] for key, value in self._data.items()}
+        cls = type(self)
+        
+        return cls({key: value[index] for key, value in self._data.items()}, self._types)
  
     def __len__(self):
 
@@ -71,8 +81,7 @@ class Structure(metaclass=Meta):
     _DEFAULTINTERPOLATION = RegularGridInterpolator
 
     def __init__(self,
-                 coords_dictdata: dict,
-                 values_dictdata: dict,
+                 dictdata,
                  driver: Driver,
                  name = None,
                  interpolator = None) -> None:
@@ -99,20 +108,29 @@ class Structure(metaclass=Meta):
         else:
             self._driver = driver
 
-        self._coords = StructArray(coords_dictdata, self._driver.Basis)
-        self._vals = StructArray(values_dictdata, self._driver.Projection)
-        
-        if interpolator is None:
-            interpolator = self._DEFAULTINTERPOLATION
-        self.interpolation = interpolator
+        index_dictdata = {}
+        for unitname in driver.Index.names:
+            index_dictdata = {**index_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
 
-        self._set_interpolators()
+        coords_dictdata = {}
+        for unitname in driver.Basis.names:
+            coords_dictdata = {**coords_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
+
+        values_dictdata = {}
+        for unitname in driver.Projection.names:
+            values_dictdata = {**values_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
+
+        self._index = StructArray(index_dictdata, dict(zip(self._driver.Index.names, self._driver.Index.dtypes)))
+        self._coords = StructArray(coords_dictdata, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
+        self._values = StructArray(values_dictdata, dict(zip(self._driver.Projection.names, self._driver.Projection.dtypes)))
+        
 
         
     def __validate__(self):
 
-        TYPECHECK(self._driver, self._DRIVERTYPE)
-        LENCHECK(self._coords, self._vals)
+        # TYPECHECK(self._driver, self._DRIVERTYPE)
+        # LENCHECK(self._coords, self._vals)
+        pass
 
     def __repr__(self):
 
@@ -146,26 +164,8 @@ class Structure(metaclass=Meta):
             reader = csv.DictReader(csvfile, delimiter=",")
             data = list(reader)
         
-        coords = {}
-        for unitname in driver.Basis.names:
-            coords = {**coords, **{unitname: [row[unitname] for row in data]}}
+        return cls(data, driver, **kwargs)
 
-        values = {}
-        for unitname in driver.Projection.names:
-            values = {**values, **{unitname: [row[unitname] for row in data]}}
-
-        return cls(coords, values, driver, **kwargs)
-
-
-
-    def _set_interpolators(self) -> None:
-        
-        args = [unitname for unitname, dtype in zip(self._driver.Basis.names, self._driver.Basis.dtypes) if np.dtype(dtype) == "d"]
-
-        # else:
-        #     args = [unitname for unitname in args if unitname in self._driver.Basis.names]
-
-        self.__interpolate__ = args
 
     def _idx(self,
              **kwargs):
@@ -174,45 +174,31 @@ class Structure(metaclass=Meta):
         Given the conditions on each variable, return the index of the observations adhering to this.
         """
 
-        conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Basis.names}
+        index_conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Index.names}
+        basis_conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Basis.names}
 
+        index_idx = np.array([np.isin(self._index._data[str(variable)], condition) for variable, condition in index_conditions.items()])
+        basis_idx = np.array([np.isin(self._coords._data[str(variable)], condition) for variable, condition in basis_conditions.items()])
 
-        idx = np.array([np.isin(self._coords._data[str(variable)], condition) for variable, condition in conditions.items()])
-        idx = np.array([all(tup) for tup in zip(*idx)])
+        idx = np.array([all(tup) for tup in zip(*index_idx, *basis_idx)])
 
         return idx
-
     
     def _interpolate(self,
                      **kwargs):
         
-        """
-        Should take in a dict with values of all the units in the basis.
-        """
+        index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
+        values_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
+        values_condition = StructArray(values_condition, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
 
-        index_vars = [var for var in self._driver.Basis.names if var not in self.__interpolate__]
-        unique_index_vals = np.unique([value for key, value in kwargs.items() if key in index_vars])
+        idx = self._idx(**index_condition)
+        coords_input = np.array(self._coords.select(idx)[self._driver.Basis.names], dtype=np.float64)
+        values_input = np.array(self._values.select(idx)[self._driver.Projection.names], dtype=np.float64)
+        coords_output = np.array(values_condition[self._driver.Basis.names], dtype=np.float64)
 
-        # Somehow check that this is 1 dimensional
-        idx = self._idx(**dict(zip(index_vars, unique_index_vals)))
-        if idx.sum() == 0:
-            raise ValueError("Can't interpolate on index variables.")
-        
-        coords_input = {key: value for key, value in self._coords.select(idx).items() if key in self.__interpolate__}
-        coords_input = np.array(list(coords_input.values()), dtype=np.float64).T
-        
-        values_input = np.array(list(self._vals.select(idx).values()), dtype=np.float64).T
+        cs = CubicSpline(coords_input.flatten(), values_input.flatten())
 
-        # really improve this stuff
-        coords_output = {key: value for key, value in kwargs.items() if key in self.__interpolate__}
-        coords_output = np.array(list(coords_output.values()), dtype=np.float64).T
-
-        cs = CubicSpline(coords_input.T.flatten(), values_input.T.flatten())
-
-        result = cs(coords_output.T.flatten(), 2)
-
-        return result
-
+        return cs(coords_output.flatten())
     
     def get_values(self,
                    **kwargs):
@@ -220,6 +206,11 @@ class Structure(metaclass=Meta):
         """
         In this function, all Basis variables are assumed to be given.
         """
+
+        # if for the index variables no input is given, take all
+        # if for the basis variables no input is given, the the defaults
+
+
         
         kwargs = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
         if not Counter(list(kwargs.keys())) == Counter(self._driver.Basis.names):

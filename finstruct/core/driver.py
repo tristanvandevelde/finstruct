@@ -67,29 +67,6 @@ class MetaDriver(type):
 
         super().__init__(name, bases, namespace)
 
-class MetaBaseDriver(MetaDriver):
-
-    @classmethod
-    def __prepare__(metacls, name, bases, **kwargs):
-
-        if not list(kwargs.keys()) == ["Basis"]:
-            raise KeyError("Only Basis accepted as dimension.")
-        
-        return super().__prepare__(name, bases, **kwargs)
-        
-
-class MetaProjectionDriver(MetaDriver):
-
-    @classmethod
-    def __prepare__(metacls, name, bases, **kwargs):
-
-        if not list(kwargs.keys()) == ["Basis", "Projection"]:
-            raise KeyError("Only Basis accepted as dimension.")
-        
-        return super().__prepare__(name, bases, **kwargs)
-
-
-
 
 class Driver(metaclass=MetaDriver):
 
@@ -134,8 +111,9 @@ class Driver(metaclass=MetaDriver):
 
 
 class IRCurveDriver(Driver,
-                    metaclass=MetaProjectionDriver, 
-                    Basis=[DateUnit, TermUnit], 
+                    metaclass=MetaDriver, 
+                    Index=[DateUnit],
+                    Basis=[TermUnit], 
                     Projection=[RateUnit]):
     """Driver to construct IR Curves.
     
@@ -145,21 +123,18 @@ class IRCurveDriver(Driver,
     Projection: Space(RateUnit)
     """
 
-class IRMultiCurveDriver(Driver,
-                        metaclass=MetaProjectionDriver, 
-                        Basis=[DateUnit, TermUnit], 
-                        Projection=[RateUnit, RateUnit]):
-    """Driver to construct IR Multicurves. Maybe extend somehow to allow X amount of Estimation curves."""
 
 class VOLSurfaceDriver(Driver,
-                       metaclass=MetaProjectionDriver,
-                       Basis=[DateUnit, TermUnit, MoneynessUnit],
+                       metaclass=MetaDriver,
+                       Index=[DateUnit],
+                       Basis=[TermUnit, MoneynessUnit],
                        Projection=[VolatilityUnit]):
     """Driver to construct Volatility Surfaces."""
 
 class CalendarDriver(Driver,
-                     metaclass=MetaProjectionDriver,
-                     Basis=[DateUnit],
+                     metaclass=MetaDriver,
+                     Index=[DateUnit],
+                     Basis=[],
                      Projection=[CashUnit]):
     """Driver to construct Calendars.
     

@@ -11,6 +11,7 @@ import datetime
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 # import configparser
@@ -41,20 +42,29 @@ import pandas as pd
 #         print(unitconventions.split(", "))
 
 
-driver = IRCurveDriver(Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
-                       Projection=[RateUnit("SPOT", "LINEAR", "Y")])
+driver = IRCurveDriver(
+    Index=[DateUnit("30/360")],
+    Basis=[TermUnit("Y", "30/360")],
+    Projection=[RateUnit("SPOT", "LINEAR", "Y")])
 
+data = [
+    {
+        "Date": np.datetime64(datetime.date(2010,1,1)),
+        "Term": 10,
+        "Rate": 0.01
+    },
+        {
+        "Date": np.datetime64(datetime.date(2010,1,1)),
+        "Term": 30,
+        "Rate": 0.015
+    }
+]
 
-curve = IRCurve.read_csv("data/treasury_rates.csv", driver)
-curve.plot("termstructure", Date=np.datetime64("2024-06-10"))
+curve = Structure.read_csv("data/treasury_rates.csv", driver)
+idx = curve._idx(Date=np.datetime64(datetime.date(2024,6,18)))
 
-# ent = np.array([[1, 2],
-#  [3, 4], [5, 6]])
+terms = np.arange(1, 31)
+rates_new = curve._interp(Date=np.datetime64(datetime.date(2024,6,18)), Term=terms)
 
-# for idx, b in enumerate(ent):
-#     print(idx)
-#     print(b)
-
-# print(type(ent[0]))
-# print(len(ent))
-
+plt.plot(terms, rates_new)
+plt.show()
