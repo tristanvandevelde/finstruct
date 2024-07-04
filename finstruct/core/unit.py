@@ -54,7 +54,8 @@ class Unit:
     _default_vals = []
 
     def __init__(self,
-                 *args) -> None:
+                 *args,
+                 defaults = None) -> None:
         
         """
         Set all conventions given by input arguments
@@ -67,6 +68,10 @@ class Unit:
         """
 
         self.set_conventions(*args)
+        if defaults is None:
+            self.defaults = self._default_vals
+        else:
+            self.defaults = defaults
         # super().__validate__()
 
     def __validate__(self):
@@ -234,6 +239,7 @@ class CashUnit(Unit):
     name = "Cash"
     dtype = float
     ctypes = [CashConvention]
+    _default_values = np.array([100])
 
     def __init__(self,
                  cashconvention):
