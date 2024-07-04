@@ -41,6 +41,10 @@ class MetaDriver(type):
         """Create _DIMTYPES classvariable based on class input.
         """
 
+
+        dimensions = ["Index", "Basis", "Projection"]
+        kwargs = {key: value for key, value in kwargs.items() if key in dimensions}
+
         for space in kwargs.values():
             TYPECHECK(space, list)
             for el in space:
@@ -94,6 +98,16 @@ class Driver(metaclass=MetaDriver):
                 TYPECHECK(unit, Unit)
             self._DIMENSIONS[key] = Space(*value)
 
+        # self.__validate__()
+
+    def __validate__(self):
+
+        try:
+            checkspace = Space(*self._DIMENSIONS["Index"].units, *self._DIMENSIONS["Basis"].units)
+            checkspace.__validate__()
+        except:
+            raise ValueError("Index and Basis are not compatible.")     
+
     @classmethod
     def read_config(cls,
                     configfile):
@@ -115,12 +129,14 @@ class IRCurveDriver(Driver,
                     Index=[DateUnit],
                     Basis=[TermUnit], 
                     Projection=[RateUnit]):
+    
     """Driver to construct IR Curves.
     
     Dimensions
     ----------
-    Basis: Space(DateUnit, TermUnit)
-    Projection: Space(RateUnit)
+    Index: [DateUnit]
+    Basis: [TermUnit]
+    Projection: [RateUnit]
     """
 
 
@@ -129,7 +145,15 @@ class VOLSurfaceDriver(Driver,
                        Index=[DateUnit],
                        Basis=[TermUnit, MoneynessUnit],
                        Projection=[VolatilityUnit]):
-    """Driver to construct Volatility Surfaces."""
+    
+    """Driver to construct VOL Surfaces.
+    
+    Dimensions
+    ----------
+    Index: [DateUnit]
+    Basis: [TermUnit, MoneynessUnit]
+    Projection: [VolatilityUnit]
+    """
 
 class CalendarDriver(Driver,
                      metaclass=MetaDriver,

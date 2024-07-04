@@ -44,24 +44,30 @@ class StructArray(object,
 
         ## Also make sure that every array has the same length.
 
-    def __getitem__(self,
-                    items):
-        
-        items = np.asarray(items)
-        return [self._data[item] for item in items] # return list of np arrays
-        
-
-
     def select(self,
                index):
         
         cls = type(self)
         
-        return cls({key: value[index] for key, value in self._data.items()}, self._types)
+        filtered_dict = {key: value[index] for key, value in self._data.items()}
+
+        return cls(filtered_dict, self._types)
  
     def __len__(self):
 
         return np.array([len(arr) for arr in self._data.values()][0])
+    
+    def __getitem__(self,
+                    items):
+        
+        """Gets only 1 item."""
+        
+        #items = np.asarray(items)
+        #return [self._data[item] for item in items] # return list of np arrays
+        key = np.asarray(items).flatten().item()
+
+        return self._data[key]
+
 
 class Structure(metaclass=Meta):
 
@@ -128,7 +134,10 @@ class Structure(metaclass=Meta):
     def __validate__(self):
 
         # TYPECHECK(self._driver, self._DRIVERTYPE)
-        # LENCHECK(self._coords, self._vals)
+        # LENCHECK(self._index, self._projection)
+        # LENCHECK(self._basis, self._projection)
+
+
         pass
 
     def __repr__(self):
@@ -182,6 +191,16 @@ class Structure(metaclass=Meta):
         idx = np.array([all(tup) for tup in zip(*index_idx, *basis_idx)])
 
         return idx
+    
+    def _get(self,
+             **kwargs):
+        
+        index_vals = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
+        index_grid = self._create_grid(*list(index_vals.values()))
+        for index_combination in index_grid:
+            self._interp()
+        
+
     
     def _interpolate(self,
                      **kwargs):
