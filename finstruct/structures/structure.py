@@ -281,3 +281,23 @@ class Structure(metaclass=Meta):
         return grid
 
     
+    def subset(self,
+               **kwargs):
+
+        
+        return super().__init__(None)
+    
+    @classmethod
+    def transform(cls,
+                  object):
+        
+        TYPECHECK(object, super(cls))
+       
+        return cls.__init__(dictdata=object._dictdata, driver=object._driver)
+
+    ## TODO:
+    ## Implement filter or select, returning another Structure object.
+    ## Subset.
+
+    ## TODO:
+    ## implement _dictdata
