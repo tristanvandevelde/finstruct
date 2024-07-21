@@ -11,7 +11,9 @@ from finstruct.core.space import Space
 
 """
 TODO: implement something like change convention for each dimension.
+TODO: Fix architecture such that Index does not always have to be passed.
 """
+
 
 class SpaceGetter(object):
     def __init__(self, name):

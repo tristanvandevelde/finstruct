@@ -5,7 +5,7 @@ from finstruct.core.unit import DateUnit, TermUnit, RateUnit
 from finstruct.core.driver import Driver, IRCurveDriver, VOLSurfaceDriver
 from finstruct.structures.structure import Structure, StructArray
 from finstruct.structures.curve import IRCurve
-from finstruct.structures.surface import VOLSurface
+#from finstruct.structures.surface import VOLSurface
 
 import datetime
 
@@ -42,29 +42,35 @@ import matplotlib.pyplot as plt
 #         print(unitconventions.split(", "))
 
 
-driver = IRCurveDriver(
-    Index=[DateUnit("30/360")],
-    Basis=[TermUnit("Y", "30/360")],
-    Projection=[RateUnit("SPOT", "LINEAR", "Y")])
+# driver = IRCurveDriver(
+#     Index=[DateUnit("30/360")],
+#     Basis=[TermUnit("Y", "30/360")],
+#     Projection=[RateUnit("SPOT", "LINEAR", "Y")])
 
-data = [
-    {
-        "Date": np.datetime64(datetime.date(2010,1,1)),
-        "Term": 10,
-        "Rate": 0.01
-    },
-        {
-        "Date": np.datetime64(datetime.date(2010,1,1)),
-        "Term": 30,
-        "Rate": 0.015
-    }
-]
+# data = [
+#     {
+#         "Date": np.datetime64(datetime.date(2010,1,1)),
+#         "Term": 10,
+#         "Rate": 0.01
+#     },
+#         {
+#         "Date": np.datetime64(datetime.date(2010,1,1)),
+#         "Term": 30,
+#         "Rate": 0.015
+#     }
+# ]
 
-curve = Structure.read_csv("data/treasury_rates.csv", driver)
-idx = curve._idx(Date=np.datetime64(datetime.date(2024,6,18)))
+# curve = Structure.read_csv("data/treasury_rates.csv", driver)
+# idx = curve._idx(Date=np.datetime64(datetime.date(2024,6,18)))
 
-terms = np.arange(1, 31)
-rates_new = curve._interp(Date=np.datetime64(datetime.date(2024,6,18)), Term=terms)
+# terms = np.arange(1, 31)
+# rates_new = curve._interp(Date=np.datetime64(datetime.date(2024,6,18)), Term=terms)
 
-plt.plot(terms, rates_new)
-plt.show()
+# plt.plot(terms, rates_new)
+# plt.show()
+
+
+driver = IRCurveDriver(Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
+                        Projection=[RateUnit("SPOT", "LINEAR", "Y")],
+                        Index=[])
+    

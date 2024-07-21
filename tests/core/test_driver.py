@@ -15,8 +15,10 @@ class TestIRCurveDriver:
 
     def test_create(self):
 
-        driver = IRCurveDriver(Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
-                               Projection=[RateUnit("SPOT", "LINEAR", "Y")])
+        driver = IRCurveDriver(
+            Index=[],
+            Basis=[DateUnit("30/360"),TermUnit("Y", "30/360")],
+            Projection=[RateUnit("SPOT", "LINEAR", "Y")])
     
         assert type(driver) is IRCurveDriver
 
