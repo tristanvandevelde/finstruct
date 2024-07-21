@@ -67,6 +67,22 @@ class StructArray(object,
         key = np.asarray(items).flatten().item()
 
         return self._data[key]
+    
+    def values(self):
+
+        return self._data.values()
+    
+    def filter(self,
+               **kwargs):
+        
+        basis_idx = np.array([np.isin(self._data[str(variable)], condition) for variable, condition in kwargs.items()])
+
+        #print(basis_idx)
+        #idx = np.array([all(tup) for tup in basis_idx])
+
+        return basis_idx
+
+
 
 
 class Structure(metaclass=Meta):
@@ -182,6 +198,8 @@ class Structure(metaclass=Meta):
         Given the conditions on each variable, return the index of the observations adhering to this.
         """
 
+        # compare with filter of StructArray
+
         index_conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Index.names}
         basis_conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Basis.names}
 
@@ -192,21 +210,12 @@ class Structure(metaclass=Meta):
 
         return idx
     
-    def _get(self,
-             **kwargs):
-        
-        index_vals = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
-        index_grid = self._create_grid(*list(index_vals.values()))
-        for index_combination in index_grid:
-            self._interp()
-        
-
     
-    def _interpolate(self,
-                     **kwargs):
+    def _interpolate_base(self,
+                          **kwargs):
         
         """
-        
+        Interpolate for given index condition.
         """
         
         index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
@@ -223,50 +232,47 @@ class Structure(metaclass=Meta):
 
         return coords_output, values_output
     
-    def get_values(self,
-                   **kwargs):
+    def _interpolate(self,
+                     **kwargs):
         
         """
-        In this function, all Basis variables are assumed to be given.
+        All Basis variables are assumed to be given.
         """
 
         index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
         coords_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
         index_grid = self._create_grid(*list(index_condition.values()))
-        # filter out the ones that exist
-        index_grid = [combination for combination in index_grid if dict(zip(self._driver.Index.names, combination)) in self._index]
-        for index_value in index_grid:
-            result = self._interpolate(**dict(zip(self._driver.Index.names, index_value)), **coords_condition)
+
+        results = []
+
+        for combination in index_grid:
+            filter = dict(zip(self._driver.Index.names, combination))
+            idx = self._idx(**filter)
+
+            coords, values = self._interpolate_base(**filter, **coords_condition)
+            results.append([combination, coords, values])
+
+        return results
+
+
+    def get_values(self,
+                   **kwargs):
+        
+        """
+        General function to extract values.
+        If no condition is given for the index or basis, the default is assumed.
+        Everything except this function is to be handled by the interpolation class.
+        """
+
+        index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
+        coords_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
 
         # if for the index variables no input is given, take all
         # if for the basis variables no input is given, the the defaults
 
-        pass
+        return self._interpolate(**index_condition, **coords_condition)
         
-        # kwargs = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
-        # if not Counter(list(kwargs.keys())) == Counter(self._driver.Basis.names):
-        #     raise ValueError("All Basis variables need to be present.")
-        #     # fill in with basis variables
-        #     # missing_variables = [name for name in self._driver.Basis.names if name not in kwargs.keys()]
-        #     # for var in missing_variables:
-        #     #     kwargs[var] = np.unique(self._coords[var])
 
-        # names = list(kwargs.keys())
-        # values = list(kwargs.values())
-
-        # grid = self._create_grid(*values)
-        # results = np.empty(len(grid), dtype=dict)
-        # for idx_outer, value in enumerate(grid):
-        #     conditions = dict(zip(names, value))
-        #     idx = self._idx(**conditions)
-        #     if idx.any():
-        #         val = self._vals.select(idx)
-        #         results[idx_outer] = {**conditions, **val}
-        #     else:
-        #         val = self._interpolate(**dict(zip(names, value)))
-        #         results[idx_outer] = {**conditions, **{"Rate": val}}
-
-        # return results
 
     def _create_grid(self,
                     *args):
