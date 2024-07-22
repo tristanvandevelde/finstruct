@@ -150,6 +150,19 @@ class Structure(metaclass=Meta):
         """
         All Basis variables are assumed to be given.
         """
+        # check
+        length = np.cumprod([len(list(options)) for options in list(*kwargs.values())])
+
+        results = {
+            "index": np.empty((length, self._driver.Index.size)),
+            "coords": np.empty((length, self._driver.Basis.size)),
+            "values": np.empty((length, self._driver.Projection.size))
+        }
+
+        print(results)
+
+        results = []
+
 
         index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}        
         index_grid = create_grid(*list(index_condition.values()))
@@ -157,9 +170,11 @@ class Structure(metaclass=Meta):
         values_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
         values_condition = StructArray(values_condition, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
 
-        results = []
+        """
+        TODO: Preallocate. How to calculate grid size when both index & coords grid is being used?
+        """
 
-        for combination in index_grid:
+        for idx, combination in enumerate(index_grid):
             filter = dict(zip(self._driver.Index.names, combination))
             idx = self._idx(**filter)
 
@@ -171,8 +186,13 @@ class Structure(metaclass=Meta):
             values_output = cs(coords_output.flatten())
 
             results.append([combination, coords_output, values_output])
+            # fill in index
+            results["index"][idx*len(index_grid):idx*len(index_grid)+len(index_grid)/length] = np.full(len(index_grid)/length, combination)
+            # fill in coords
+            # fill in values
 
         return results
+        # return index, coords, values
 
 
     def get_values(self,
@@ -193,10 +213,11 @@ class Structure(metaclass=Meta):
         return self._interpolate(**index_condition, **coords_condition)
         
 
+    def append(self,
+               **kwargs):
+        
+        """Add observation to the structure."""
 
-
-
-    
     # def subset(self,
     #            **kwargs):
 

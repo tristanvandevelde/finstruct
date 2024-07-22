@@ -183,5 +183,10 @@ class StructArray(object,
         #idx = np.array([all(tup) for tup in basis_idx])
 
         return basis_idx
+    
+    def append(self,
+               **kwargs):
+        
+        """Add data point."""
 
 
