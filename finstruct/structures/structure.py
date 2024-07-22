@@ -5,84 +5,17 @@ import numpy as np
 import numpy.typing as npt
 from scipy.interpolate import interpn, RegularGridInterpolator, CubicSpline
 
-from finstruct.utils.types import Meta
+from finstruct.utils.types import StructArray, Meta
+from finstruct.utils.tools import create_grid
 from finstruct.utils.checks import TYPECHECK, LENCHECK
 from finstruct.core.driver import Driver
+from finstruct.interpolation.benchmark import Interpolation
 
 # In __init__ of Structure:
 
         # create properties for unit values
         # for unit in self._driver:
         #     property()
-
-## TODO: Merge with utils.types.FLDict
-class StructArray(object,
-                  metaclass=Meta):
-
-    """Alternative to numpy structured arrays.
-
-    """
-
-    def __init__(self,
-                 dictdata,
-                 dicttypes):
-        
-        """
-        Data must be passed as dict somehow, to allow for:
-        1. different types
-        2. mapping to the space
-        # """
-
-        self._types = dicttypes
-        self._data = {key: np.array(value, dtype=np.dtype(dicttypes[key])) for key, value in dictdata.items() if key in self._types.keys()}
-
-    def __validate__(self):
-
-        TYPECHECK(self._data, dict)
-        for val in self._data.values():
-            TYPECHECK(val, np.ndarray)
-
-        ## Also make sure that every array has the same length.
-
-    def select(self,
-               index):
-        
-        cls = type(self)
-        
-        filtered_dict = {key: value[index] for key, value in self._data.items()}
-
-        return cls(filtered_dict, self._types)
- 
-    def __len__(self):
-
-        return np.array([len(arr) for arr in self._data.values()][0])
-    
-    def __getitem__(self,
-                    items):
-        
-        """Gets only 1 item."""
-        
-        #items = np.asarray(items)
-        #return [self._data[item] for item in items] # return list of np arrays
-        key = np.asarray(items).flatten().item()
-
-        return self._data[key]
-    
-    def values(self):
-
-        return self._data.values()
-    
-    def filter(self,
-               **kwargs):
-        
-        basis_idx = np.array([np.isin(self._data[str(variable)], condition) for variable, condition in kwargs.items()])
-
-        #print(basis_idx)
-        #idx = np.array([all(tup) for tup in basis_idx])
-
-        return basis_idx
-
-
 
 
 class Structure(metaclass=Meta):
@@ -211,27 +144,6 @@ class Structure(metaclass=Meta):
         return idx
     
     
-    def _interpolate_base(self,
-                          **kwargs):
-        
-        """
-        Interpolate for given index condition.
-        """
-        
-        index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
-        values_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
-        values_condition = StructArray(values_condition, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
-
-        idx = self._idx(**index_condition)
-        coords_input = np.array(self._coords.select(idx)[self._driver.Basis.names], dtype=np.float64)
-        values_input = np.array(self._values.select(idx)[self._driver.Projection.names], dtype=np.float64)
-        coords_output = np.array(self._create_grid(values_condition[self._driver.Basis.names]), dtype=np.float64)
-
-        cs = CubicSpline(coords_input.flatten(), values_input.flatten())
-        values_output = cs(coords_output.flatten())
-
-        return coords_output, values_output
-    
     def _interpolate(self,
                      **kwargs):
         
@@ -239,9 +151,11 @@ class Structure(metaclass=Meta):
         All Basis variables are assumed to be given.
         """
 
-        index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
-        coords_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
-        index_grid = self._create_grid(*list(index_condition.values()))
+        index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}        
+        index_grid = create_grid(*list(index_condition.values()))
+
+        values_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
+        values_condition = StructArray(values_condition, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
 
         results = []
 
@@ -249,8 +163,14 @@ class Structure(metaclass=Meta):
             filter = dict(zip(self._driver.Index.names, combination))
             idx = self._idx(**filter)
 
-            coords, values = self._interpolate_base(**filter, **coords_condition)
-            results.append([combination, coords, values])
+            coords_input = np.array(self._coords.select(idx)[self._driver.Basis.names], dtype=np.float64)
+            values_input = np.array(self._values.select(idx)[self._driver.Projection.names], dtype=np.float64)
+            coords_output = np.array(create_grid(values_condition[self._driver.Basis.names]), dtype=np.float64)
+
+            cs = CubicSpline(coords_input.flatten(), values_input.flatten())
+            values_output = cs(coords_output.flatten())
+
+            results.append([combination, coords_output, values_output])
 
         return results
 
@@ -274,36 +194,20 @@ class Structure(metaclass=Meta):
         
 
 
-    def _create_grid(self,
-                    *args):
-        
-        """
-        Each arg represents a variable for which we require the given values in a full grid.
-        """
 
-        grid = np.meshgrid(*args, indexing='ij')
-        grid = np.array(grid).reshape(len(args),-1).T
-        
-        return grid
 
     
-    def subset(self,
-               **kwargs):
+    # def subset(self,
+    #            **kwargs):
 
         
-        return super().__init__(None)
+    #     return super().__init__(None)
     
-    @classmethod
-    def transform(cls,
-                  object):
+    # @classmethod
+    # def transform(cls,
+    #               object):
         
-        TYPECHECK(object, super(cls))
+    #     TYPECHECK(object, super(cls))
        
-        return cls.__init__(dictdata=object._dictdata, driver=object._driver)
+    #     return cls.__init__(dictdata=object._dictdata, driver=object._driver)
 
-    ## TODO:
-    ## Implement filter or select, returning another Structure object.
-    ## Subset.
-
-    ## TODO:
-    ## implement _dictdata
