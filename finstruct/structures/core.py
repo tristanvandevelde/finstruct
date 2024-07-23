@@ -60,22 +60,18 @@ class Structure(metaclass=Meta):
     def load(self,
              dictdata):
         
-        index_dictdata = {}
-        for unitname in self._driver.Index.names:
-            index_dictdata = {**index_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
+        dicttypes = {
+            **dict(zip(self._driver.Index.names, self._driver.Index.dtypes)),
+            **dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)),
+            **dict(zip(self._driver.Projection.names, self._driver.Projection.dtypes)),
+        }
 
-        coords_dictdata = {}
-        for unitname in self._driver.Basis.names:
-            coords_dictdata = {**coords_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
+        dictdata_final = {}
+        for unitname in list(dicttypes.keys()):
+            dictdata_final = {**dictdata_final, **{unitname : [row[unitname] for row in dictdata]}}
 
-        values_dictdata = {}
-        for unitname in self._driver.Projection.names:
-            values_dictdata = {**values_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
-
-        self._index = StructArray(index_dictdata, dict(zip(self._driver.Index.names, self._driver.Index.dtypes)))
-        self._coords = StructArray(coords_dictdata, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
-        self._values = StructArray(values_dictdata, dict(zip(self._driver.Projection.names, self._driver.Projection.dtypes)))
-       
+        self.data = StructArray(dictdata_final, dicttypes)
+        
 
     def __validate__(self):
 
@@ -183,21 +179,6 @@ class Manifold(Structure,
             self.interpolator = None
         # TYPECHECK(self.interpolator, None)
 
-    def _idx(self,
-             **kwargs):
-        
-        """
-        Given the conditions on each variable, return the index of the observations adhering to this.
-        """
-
-        index_conditions, basis_conditions, _ = self._extract_conditions(kwargs)
-
-        index_idx = self._index.idx(**index_conditions)
-        basis_idx = self._coords.idx(**basis_conditions)
-
-        idx = np.array([all(tup) for tup in zip(*index_idx, *basis_idx)])
-
-        return idx
     
     
     def _interpolate(self,
@@ -223,11 +204,10 @@ class Manifold(Structure,
 
         for idx, combination in enumerate(index_grid):
 
-            filter = dict(zip(self._driver.Index.names, combination))
-            _idx = self._idx(**filter)
+            selection = dict(zip(self._driver.Index.names, combination))
 
-            coords_input = np.array(self._coords.select(_idx)[self._driver.Basis.names], dtype=np.float64)
-            values_input = np.array(self._values.select(_idx)[self._driver.Projection.names], dtype=np.float64)
+            coords_input = np.array(self.data.filter(**selection)[self._driver.Basis.names], dtype=np.float64)
+            values_input = np.array(self.data.filter(**selection)[self._driver.Projection.names], dtype=np.float64)
 
             cs = CubicSpline(coords_input.flatten(), values_input.flatten())
             values_output = cs(basis_grid.flatten())
@@ -251,38 +231,37 @@ class Manifold(Structure,
         Everything except this function is to be handled by the interpolation class.
         """
 
-        index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}
-        coords_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
+        index_condition, basis_condition, _ = self._extract_conditions(kwargs)
 
         # if for the index variables no input is given, take all
         # if for the basis variables no input is given, the the defaults
 
-        return self._interpolate(**index_condition, **coords_condition)
+        return self._interpolate(**index_condition, **basis_condition)
         
 
-    def append(self,
-               **kwargs):
+    # def append(self,
+    #            **kwargs):
         
-        """Add observation to the structure.
+    #     """Add observation to the structure.
         
-        TODO: Check"""
+    #     TODO: Check"""
 
-        index_condition, coords_condition, values_condition = self._extract_conditions(kwargs)
+    #     index_condition, coords_condition, values_condition = self._extract_conditions(kwargs)
 
-        if not set(index_condition.keys()) == set(self._driver.Index.names):
-            raise ValueError("Not all index variables are present")
-        if not set(coords_condition.keys()) == set(self._driver.Basis.names):
-            raise ValueError("Not all basis variables are present")
-        if not set(values_condition.keys()) == set(self._driver.Projection.names):
-            raise ValueError("Not all projection variables are present")
+    #     if not set(index_condition.keys()) == set(self._driver.Index.names):
+    #         raise ValueError("Not all index variables are present")
+    #     if not set(coords_condition.keys()) == set(self._driver.Basis.names):
+    #         raise ValueError("Not all basis variables are present")
+    #     if not set(values_condition.keys()) == set(self._driver.Projection.names):
+    #         raise ValueError("Not all projection variables are present")
         
-        if not all([len(val) for val in index_condition.values()] == 1):
-            raise ValueError("Only one observation allowed")
-        # do same for coords and values
+    #     if not all([len(val) for val in index_condition.values()] == 1):
+    #         raise ValueError("Only one observation allowed")
+    #     # do same for coords and values
 
-        self._index.append(index_condition)
-        self._coords.append(coords_condition)
-        self._values.append(values_condition)
+    #     self._index.append(index_condition)
+    #     self._coords.append(coords_condition)
+    #     self._values.append(values_condition)
 
 
     def _extract_conditions(self,
@@ -309,27 +288,27 @@ class Manifold(Structure,
         return df
     
 
-    def __add__(self,
-                other):
+    # def __add__(self,
+    #             other):
         
-        pass
+    #     pass
 
-    def __mul__(self,
-                other):
+    # def __mul__(self,
+    #             other):
         
-        pass
+    #     pass
 
-    def __sub__(self,
-                other):
+    # def __sub__(self,
+    #             other):
         
-        pass
+    #     pass
 
-    def convert(self,
-                basis):
+    # def convert(self,
+    #             basis):
         
-        """Convert the structure to a new Basis of the same kind.
+    #     """Convert the structure to a new Basis of the same kind.
         
-        """
+    #     """
                           
 
 
