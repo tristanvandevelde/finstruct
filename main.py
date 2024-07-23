@@ -28,12 +28,12 @@ terms = np.arange(1, 31)
 idx = curve._idx(Date=dates[0])
 index, coords, values = curve._interpolate(Date=dates, Term=terms)
 
-print(idx)
+# print(idx)
 
-# print(mydate in curve._index["Date"])
-# df = pd.DataFrame({"Date": index.flatten(),
-#                    "Term": coords.flatten(),
-#                    "Rate": values.flatten()})
+df = pd.DataFrame({"Date": index.flatten(),
+                   "Term": coords.flatten(),
+                   "Rate": values.flatten()})
+print(df)
 # sns.lineplot(df,
 #              x="Term",
 #              y="Rate",

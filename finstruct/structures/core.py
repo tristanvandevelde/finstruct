@@ -183,10 +183,6 @@ class Manifold(Structure,
             self.interpolator = None
         # TYPECHECK(self.interpolator, None)
 
-
-
-
-
     def _idx(self,
              **kwargs):
         
@@ -194,17 +190,10 @@ class Manifold(Structure,
         Given the conditions on each variable, return the index of the observations adhering to this.
         """
 
-        # compare with filter of StructArray
-
-        index_conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Index.names}
-        basis_conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Basis.names}
-
-        #index_idx = np.array([np.isin(self._index._data[str(variable)], condition) for variable, condition in index_conditions.items()])
-        #basis_idx = np.array([np.isin(self._coords._data[str(variable)], condition) for variable, condition in basis_conditions.items()])
+        index_conditions, basis_conditions, _ = self._extract_conditions(kwargs)
 
         index_idx = self._index.idx(**index_conditions)
         basis_idx = self._coords.idx(**basis_conditions)
-
 
         idx = np.array([all(tup) for tup in zip(*index_idx, *basis_idx)])
 
@@ -227,19 +216,13 @@ class Manifold(Structure,
             "values": np.empty((length, self._driver.Projection.size))
         }
 
-        index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}        
+        index_condition, basis_condition, _ = self._extract_conditions(kwargs)
+
         index_grid = create_grid(*list(index_condition.values()))
-
-        values_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
-        values_condition = StructArray(values_condition, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
-
-        coords_output = np.array(create_grid(values_condition[self._driver.Basis.names]), dtype=np.float64)
-
-        """
-        TODO: Preallocate. How to calculate grid size when both index & coords grid is being used?
-        """
+        basis_grid = create_grid(*list(basis_condition.values()))
 
         for idx, combination in enumerate(index_grid):
+
             filter = dict(zip(self._driver.Index.names, combination))
             _idx = self._idx(**filter)
 
@@ -247,16 +230,14 @@ class Manifold(Structure,
             values_input = np.array(self._values.select(_idx)[self._driver.Projection.names], dtype=np.float64)
 
             cs = CubicSpline(coords_input.flatten(), values_input.flatten())
-            values_output = cs(coords_output.flatten())
+            values_output = cs(basis_grid.flatten())
 
-            #results.append([combination, coords_output, values_output])
             inner_grid_size = int(length/len(index_grid))
             slice_start = int(idx*inner_grid_size)
 
             results["index"][slice_start:slice_start+inner_grid_size] = combination
-            results["coords"][slice_start:slice_start+inner_grid_size] = coords_output
+            results["coords"][slice_start:slice_start+inner_grid_size] = basis_grid
             results["values"][slice_start:slice_start+inner_grid_size] = values_output[:,None]
-
 
         return results["index"], results["coords"], results["values"]
 
