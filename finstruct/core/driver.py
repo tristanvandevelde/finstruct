@@ -123,6 +123,11 @@ class Driver(metaclass=MetaDriver):
     def units(self):
 
         """Return all units in all dimensions."""
+
+    @property
+    def dim(self):
+
+        return len(self._DIMTYPES["Basis"])
             
 
 

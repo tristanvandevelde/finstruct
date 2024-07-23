@@ -9,7 +9,7 @@ from finstruct.utils.types import Meta
 
 from finstruct.core.unit import DateUnit, CashUnit
 from finstruct.core.driver import Driver, CalendarDriver
-from finstruct.structures.structure import Structure
+from finstruct.structures.core import Structure
 
 # """
 # TODO: Use config files to complement .csv files.

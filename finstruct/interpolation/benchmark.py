@@ -5,7 +5,7 @@
 import numpy as np
 import numpy.typing as npt
 
-from finstruct.structures.structure import StructArray
+from finstruct.structures.core import StructArray
 ## TODO: move StructArray to tools
 
 """
@@ -26,21 +26,27 @@ class Interpolation(object):
     """
 
     def __init__(self,
-                 coords: npt.ArrayLike,
-                 values: npt.ArrayLike):
+                 **kwargs):
+        
+        # Allow sequence of variables.
+
+        self.intrapolate = True
+        self.extrapolate = False
+
+    def load(self,
+             coords: npt.ArrayLike,
+             values: npt.ArrayLike):
+        
+        """Load in example data."""
         
         # replace by pointers
         self.coords = coords
         self.values = values
 
-        self.intrapolate = True
-        self.extrapolate = False
-
-    def construct(self):
-
-        """
-        Construct the required parameter values such that the evaluate function can be executed.
-        """
+    def deload(self):
+        
+        self.coords = None
+        self.values = None
 
     def evaluate(self,
                  **kwargs):
@@ -49,10 +55,7 @@ class Interpolation(object):
 
         pass
 
-    def prepare(self,
-                **kwargs):
-        
-        pass
+
 
     def __call__(self,
                  coords: npt.ArrayLike):
@@ -86,5 +89,9 @@ class Linear(Interpolation):
     pass
 
 class CubicSpline(Interpolation):
+
+    pass
+
+class NadarayaWatson(Interpolation):
 
     pass

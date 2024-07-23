@@ -4,12 +4,19 @@ import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
 
-from finstruct.utils.types import Meta
 from finstruct.core.driver import IRCurveDriver
-from finstruct.structures.structure import Structure
+from finstruct.structures.core import Structure
 
-class IRCurve(Structure,
-              metaclass=Meta):
+class Curve(Structure):
+
+    def __validate__(self):
+
+        super().__validate__(self)
+
+        if not self._driver.dim == 1:
+            raise ValueError("Curve can only have dimension 1.")
+        
+class IRCurve(Curve):
 
     """Interest Rate Curve class. 
 
@@ -116,12 +123,3 @@ class IRCurve(Structure,
 
 #         return disc_factors
     
-
-
-
-
-
-# class Spread:
-
-#     pass
-

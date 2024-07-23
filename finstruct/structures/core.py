@@ -3,6 +3,7 @@ from collections import Counter
 
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 from scipy.interpolate import interpn, RegularGridInterpolator, CubicSpline
 
 from finstruct.utils.types import StructArray, Meta
@@ -151,18 +152,14 @@ class Structure(metaclass=Meta):
         All Basis variables are assumed to be given.
         """
         # check
-        length = np.cumprod([len(list(options)) for options in list(*kwargs.values())])
+        length = np.cumprod([len(list(options)) for options in list(kwargs.values())])[-1]
 
+        # Should probably be replaced by StructArrays
         results = {
-            "index": np.empty((length, self._driver.Index.size)),
+            "index": np.empty([length, self._driver.Index.size], dtype=self._driver.Index.dtypes[0]),
             "coords": np.empty((length, self._driver.Basis.size)),
             "values": np.empty((length, self._driver.Projection.size))
         }
-
-        print(results)
-
-        results = []
-
 
         index_condition = {key: value for key, value in kwargs.items() if key in self._driver.Index.names}        
         index_grid = create_grid(*list(index_condition.values()))
@@ -170,29 +167,32 @@ class Structure(metaclass=Meta):
         values_condition = {key: value for key, value in kwargs.items() if key in self._driver.Basis.names}
         values_condition = StructArray(values_condition, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
 
+        coords_output = np.array(create_grid(values_condition[self._driver.Basis.names]), dtype=np.float64)
+
         """
         TODO: Preallocate. How to calculate grid size when both index & coords grid is being used?
         """
 
         for idx, combination in enumerate(index_grid):
             filter = dict(zip(self._driver.Index.names, combination))
-            idx = self._idx(**filter)
+            _idx = self._idx(**filter)
 
-            coords_input = np.array(self._coords.select(idx)[self._driver.Basis.names], dtype=np.float64)
-            values_input = np.array(self._values.select(idx)[self._driver.Projection.names], dtype=np.float64)
-            coords_output = np.array(create_grid(values_condition[self._driver.Basis.names]), dtype=np.float64)
+            coords_input = np.array(self._coords.select(_idx)[self._driver.Basis.names], dtype=np.float64)
+            values_input = np.array(self._values.select(_idx)[self._driver.Projection.names], dtype=np.float64)
 
             cs = CubicSpline(coords_input.flatten(), values_input.flatten())
             values_output = cs(coords_output.flatten())
 
-            results.append([combination, coords_output, values_output])
-            # fill in index
-            results["index"][idx*len(index_grid):idx*len(index_grid)+len(index_grid)/length] = np.full(len(index_grid)/length, combination)
-            # fill in coords
-            # fill in values
+            #results.append([combination, coords_output, values_output])
+            inner_grid_size = int(length/len(index_grid))
+            slice_start = int(idx*inner_grid_size)
 
-        return results
-        # return index, coords, values
+            results["index"][slice_start:slice_start+inner_grid_size] = combination
+            results["coords"][slice_start:slice_start+inner_grid_size] = coords_output
+            results["values"][slice_start:slice_start+inner_grid_size] = values_output[:,None]
+
+
+        return results["index"], results["coords"], results["values"]
 
 
     def get_values(self,
@@ -216,17 +216,85 @@ class Structure(metaclass=Meta):
     def append(self,
                **kwargs):
         
-        """Add observation to the structure."""
+        """Add observation to the structure.
+        
+        TODO: Check"""
+
+        index_condition, coords_condition, values_condition = self._extract_conditions(kwargs)
+
+        if not set(index_condition.keys()) == set(self._driver.Index.names):
+            raise ValueError("Not all index variables are present")
+        if not set(coords_condition.keys()) == set(self._driver.Basis.names):
+            raise ValueError("Not all basis variables are present")
+        if not set(values_condition.keys()) == set(self._driver.Projection.names):
+            raise ValueError("Not all projection variables are present")
+        
+        if not all([len(val) for val in index_condition.values()] == 1):
+            raise ValueError("Only one observation allowed")
+        # do same for coords and values
+
+        self._index.append(index_condition)
+        self._coords.append(coords_condition)
+        self._values.append(values_condition)
+
+
+    def _extract_conditions(self,
+                            conditions):
+        
+        index_condition = {key: value for key, value in conditions.items() if key in self._driver.Index.names}
+        coords_condition = {key: value for key, value in conditions.items() if key in self._driver.Basis.names}
+        values_condition = {key: value for key, value in conditions.items() if key in self._driver.Projection.names}
+
+        return index_condition, coords_condition, values_condition
+
+
+    @property
+    def df(self):
+
+        """TODO: Check"""
+
+        # get values for all defaults
+        index, coords, values = self.get_values()
+
+        df = pd.DataFrame({**index._data, **coords._data, **values._data},
+                          dtypes=[*index._dtypes, *coords._dtypes, *values._dtypes])
+        
+        return df
+    
+
+    def __add__(self,
+                other):
+        
+        pass
+
+    def __mul__(self,
+                other):
+        
+        pass
+
+    def __sub__(self,
+                other):
+        
+        pass
+
+    def convert(self,
+                basis):
+        
+        """Convert the structure to a new Basis of the same kind.
+        
+        """
+                          
+
 
     # def subset(self,
     #            **kwargs):
-
         
     #     return super().__init__(None)
     
     # @classmethod
     # def transform(cls,
     #               object):
+    # Transform to different class
         
     #     TYPECHECK(object, super(cls))
        
