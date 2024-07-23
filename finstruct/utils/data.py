@@ -19,17 +19,6 @@ class StructArray(object,
         
         self._data = {key: np.array(value, dtype=np.dtype(dicttypes[key])) for key, value in dictdata.items() if key in dicttypes.keys()}
 
-
-    def select(self,
-               index):
-        
-        cls = type(self)
-        
-        filtered_dict = {key: value[index] for key, value in self._data.items()}
-
-        return cls(filtered_dict, dict(zip(self.names, self.dtypes)))
- 
-
     def idx(self,
             **kwargs):
 
