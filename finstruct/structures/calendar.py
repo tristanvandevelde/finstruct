@@ -9,14 +9,13 @@ from finstruct.utils.types import Meta
 
 from finstruct.core.unit import DateUnit, CashUnit
 from finstruct.core.driver import Driver, CalendarDriver
-from finstruct.structures.core import Structure
+from finstruct.structures.core import Grid
 
 # """
 # TODO: Use config files to complement .csv files.
 # """
 
-class Calendar(Structure,
-               metaclass=Meta):
+class Calendar(Grid):
     
     _DEFAULTDRIVER = CalendarDriver
 

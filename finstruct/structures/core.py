@@ -6,7 +6,8 @@ import numpy.typing as npt
 import pandas as pd
 from scipy.interpolate import interpn, RegularGridInterpolator, CubicSpline
 
-from finstruct.utils.types import StructArray, Meta
+from finstruct.utils.types import Meta
+from finstruct.utils.data import StructArray
 from finstruct.utils.tools import create_grid
 from finstruct.utils.checks import TYPECHECK, LENCHECK
 from finstruct.core.driver import Driver
@@ -19,80 +20,73 @@ from finstruct.interpolation.benchmark import Interpolation
         #     property()
 
 
+"""TODO: How to implement a changing correlation structure over time?
+Require an environment where the Basis has multiple units of the same type.
+
+For example: 
+    Index: Date
+    Basis: [Price1, Price2, Price3]
+    Projection: correlation
+
+Interpolation should not be allowed there.
+"""
+
 class Structure(metaclass=Meta):
 
-    """Structure class.
-    
-    Attributes
-    ----------
-    name: str
-        Name of the structure
-    driver: Driver
-        Driver of the structure
+    """Structure class, holding data and methods related to a Driver.
     
     """
 
-    _DRIVERTYPE = Driver
-    _DEFAULTDRIVER = "StructureDefault"
-    _DEFAULTINTERPOLATION = RegularGridInterpolator
-
     def __init__(self,
-                 dictdata,
-                 driver: Driver,
-                 name = None,
-                 interpolator = None) -> None:
+                 name: str = None,
+                 driver: Driver = None,
+                 data: dict = None):
         
-        """
-        Initialize Structure.
-
-        Parameters
-        ----------
-        data_coords: list[C,N]
-            Coordinates of the data to load in.
-        data_vals: list[1,N]
-            Values of the data to load in.
-        driver: Driver
-            Driver to use for construction.
-        name: str
-            Name of the Structure to be set.
-        """
-
+        _DEFAULTS = {
+            "DRIVERTYPE": Driver
+        }
+        
+        _DRIVERTYPE = Driver
+        _DEFAULTDRIVER = Driver(None)
+        # default should be taken from _DRIVERTYPE
+        
         self.name = name
+        self._driver = driver
+        if data is not None:
+            self.load(data)
         
-        if driver is None:
-            self._driver = Driver.read_config(f"config/drivers/{self._DEFAULTDRIVER}.ini")
-        else:
-            self._driver = driver
 
+
+    def load(self,
+             dictdata):
+        
         index_dictdata = {}
-        for unitname in driver.Index.names:
+        for unitname in self._driver.Index.names:
             index_dictdata = {**index_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
 
         coords_dictdata = {}
-        for unitname in driver.Basis.names:
+        for unitname in self._driver.Basis.names:
             coords_dictdata = {**coords_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
 
         values_dictdata = {}
-        for unitname in driver.Projection.names:
+        for unitname in self._driver.Projection.names:
             values_dictdata = {**values_dictdata, **{unitname: [row[unitname] for row in dictdata]}}
 
         self._index = StructArray(index_dictdata, dict(zip(self._driver.Index.names, self._driver.Index.dtypes)))
         self._coords = StructArray(coords_dictdata, dict(zip(self._driver.Basis.names, self._driver.Basis.dtypes)))
         self._values = StructArray(values_dictdata, dict(zip(self._driver.Projection.names, self._driver.Projection.dtypes)))
-        
-        
+       
+
     def __validate__(self):
 
-        # TYPECHECK(self._driver, self._DRIVERTYPE)
-        # LENCHECK(self._index, self._projection)
-        # LENCHECK(self._basis, self._projection)
+        if self._driver is None:
+            # take from drivertype
+            self._driver = self._DEFAULTDRIVER
+            #self._driver = Driver.read_config(f"config/drivers/{self._DEFAULTDRIVER}.ini")
+
+        TYPECHECK(self._driver, self._DRIVERTYPE)
 
 
-        pass
-
-    def __repr__(self):
-
-        return f"{self.__class__.__name__}({self.name}, {repr(self._driver)})"
 
     @classmethod
     def read_csv(cls,
@@ -104,7 +98,7 @@ class Structure(metaclass=Meta):
         Read from csvfile.
         """
 
-        """Create Structure object from a .csv-file and driver object (can later be config file).
+        """Create Structure object from a .csv-file and Driver object.
 
         Parameters
         ----------
@@ -122,7 +116,75 @@ class Structure(metaclass=Meta):
             reader = csv.DictReader(csvfile, delimiter=",")
             data = list(reader)
         
-        return cls(data, driver, **kwargs)
+        return cls(data=data, driver=driver, **kwargs)
+
+
+    def __repr__(self):
+
+        return f"{self.__class__.__name__}({self.name}, {repr(self._driver)})"
+    
+
+        
+
+
+class Grid(Structure,
+           metaclass=Meta):
+
+    pass
+
+
+class Manifold(Structure,
+               metaclass=Meta):
+
+    """Structure class.
+    
+    Attributes
+    ----------
+    name: str
+        Name of the structure
+    driver: Driver
+        Driver of the structure
+    
+    """
+
+    _DRIVERTYPE = Driver
+    _DEFAULTDRIVER = "StructureDefault"
+    _DEFAULTINTERPOLATION = RegularGridInterpolator
+
+    def __init__(self,
+                 name: str = None,
+                 driver: Driver = None,
+                 data: dict = None,
+                 interpolator: object = None) -> None:
+        
+        """
+        Initialize Structure.
+
+        Parameters
+        ----------
+        data_coords: list[C,N]
+            Coordinates of the data to load in.
+        data_vals: list[1,N]
+            Values of the data to load in.
+        driver: Driver
+            Driver to use for construction.
+        name: str
+            Name of the Structure to be set.
+        """
+
+        super().__init__(name=name, driver=driver, data=data)
+        self.interpolator = interpolator
+
+        
+    def __validate__(self):
+
+        super().__validate__()
+        if self.interpolator is None:
+            self.interpolator = None
+        # TYPECHECK(self.interpolator, None)
+
+
+
 
 
     def _idx(self,
@@ -137,8 +199,12 @@ class Structure(metaclass=Meta):
         index_conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Index.names}
         basis_conditions = {variable: np.asarray(condition) for variable, condition in kwargs.items() if variable in self._driver.Basis.names}
 
-        index_idx = np.array([np.isin(self._index._data[str(variable)], condition) for variable, condition in index_conditions.items()])
-        basis_idx = np.array([np.isin(self._coords._data[str(variable)], condition) for variable, condition in basis_conditions.items()])
+        #index_idx = np.array([np.isin(self._index._data[str(variable)], condition) for variable, condition in index_conditions.items()])
+        #basis_idx = np.array([np.isin(self._coords._data[str(variable)], condition) for variable, condition in basis_conditions.items()])
+
+        index_idx = self._index.idx(**index_conditions)
+        basis_idx = self._coords.idx(**basis_conditions)
+
 
         idx = np.array([all(tup) for tup in zip(*index_idx, *basis_idx)])
 
@@ -298,5 +364,5 @@ class Structure(metaclass=Meta):
         
     #     TYPECHECK(object, super(cls))
        
-    #     return cls.__init__(dictdata=object._dictdata, driver=object._driver)
+    #     return cls.__init__(name=object.name, dictdata=object._dictdata, driver=object._driver)
 
