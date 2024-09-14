@@ -8,6 +8,9 @@ from finstruct.core.conventions import Convention
 from finstruct.core.unit import Unit
 
 
+## TODO: Check if the existence of Spaces is absolutely required here. 
+
+
 class Space(metaclass=Meta):
 
     """A space is a collection of units that needs to be internally consistent.
@@ -100,7 +103,7 @@ class Space(metaclass=Meta):
                     unit.set_conventions(cname=convention)
 
         """
-        TODO: Extend such that conversion functions are returned.
+        TODO: Extend such that conversion functions are returned for each unit.
         """
 
     def CONVENTIONCHECK(self,

@@ -10,6 +10,7 @@ from finstruct.utils.types import Meta
 from finstruct.core.unit import DateUnit, CashUnit
 from finstruct.core.driver import Driver, CalendarDriver
 from finstruct.structures.core import Grid
+from finstruct.structures.curve import IRCurve
 
 # """
 # TODO: Use config files to complement .csv files.
@@ -19,49 +20,47 @@ class Calendar(Grid):
     
     _DEFAULTDRIVER = CalendarDriver
 
-
-
-# class Calendar:
-
-#     """Calendar class which defines the exchange of cashflows on predetermined times.
-
-#     Attributes
-#     ----------
-#     dateunit: DateUnit
-#         Dateunit configuring how the dates of the calendar are interpreted.
-#     dtypes: np.dtype
-#         Data types describing how the data is stored.
-#     data: np.array
-#         Structured numpy array containing the dates and cashflows.
-#     """
-
-#     DEFAULTS = {
-#         "driver": Driver([DateUnit("30/360")],[CashUnit("EUR")])
-#     }
-
-#     def __init__(self,
-#                  dates: npt.ArrayLike,
-#                  values: npt.ArrayLike,
-#                  driver: Driver = None) -> None:
+    def __init__(self,
+                 driver: None,
+                 data: None,
+                 name: None):
         
-#         """
-#         Parameters
-#         ----------
-#         dates: npt.ArrayLike
-#             Dates on which the exchanges happen.
-#         values: npt.ArrayLike
-#             Amounts of the exchanges
-#         """
+        super().__init__(driver=driver, data=data, name=name)
 
-#         self.name = None
-#         self.date = None
-#         self.driver = None
+    def __validate__(self):
 
-#         # self.dtypes = np.dtype([(self.dateunit.name, self.dateunit.dtype), 
-#         #                         (self.cashunit.name, self.cashunit.dtype)])
-#         # self.data = np.array(list(zip(dates, values)), dtype=self.dtypes)        
+        pass
 
-    
+    #def calc_npv(self,
+    #             curve: IRCurve):
+        
+    #    timedelta = 
+
+    def calc_yearfraction(self,
+                          start_date: np.datetime64) -> np.array:
+        
+
+        return np.array([self._driver.Index["Date"].conventions["DaycountConvention"].calc_yearfraction(start_date, date) for date in self._data["Date"]])
+
+    def calc_npv(self,
+                 start_date: np.datetime64,
+                 curve: IRCurve,
+                 daycountconvention = None,
+                 frequencyconvention = None):
+        
+        self.set_conventions(daycount=daycountconvention, frequency=frequencyconvention)
+        
+
+        
+        
+        timedeltas = self.calc_yearfraction(start_date)
+        dfactors = curve.get_disc(start_date, timedeltas)
+
+        return sum(dfactors * self._data["Cash"])
+
+
+
+
 #     @property
 #     def dates(self):
 

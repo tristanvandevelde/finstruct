@@ -32,12 +32,12 @@ class IRCurve(Curve):
     _DEFAULTDRIVER = "IRCurveDefault"
 
     def __init__(self,
-                 data_coords,
-                 data_vals,
-                 driver: IRCurveDriver,
-                 name = None) -> None:
+                 name: str = None,
+                 driver: IRCurveDriver = None,
+                 data: dict = None):
         
-        super().__init__(data_coords, data_vals, driver, name)
+        super().__init__(name=name, driver=driver, data=data)
+        
 
     def plot(self,
              type: str,
@@ -45,42 +45,39 @@ class IRCurve(Curve):
         
         kwargs = {key: value for key, value in kwargs.items() if key in ["Term", "Date"]}
         
-        match type:
-            case "history":
-                """
-                Plot the historical evolution of the rates.
-                """
-                # fix color for terms
-                try:
-                    terms = list(kwargs["Terms"])
-                except:
-                    terms = np.unique(self._coords._data["Term"])
-                finally:
-                    for term in terms:
-                        idx = self._idx(Term=term)
-                        plt.plot(self._coords.select(idx)["Date"], self._vals.select(idx)["Rate"], label=term)
-                    plt.legend()
-                    plt.title(self.name)
-                    plt.show()
+        # match type:
+        #     case "history":
+        #         """
+        #         Plot the historical evolution of the rates.
+        #         """
+        #         # fix color for terms
+        #         try:
+        #             terms = list(kwargs["Terms"])
+        #         except:
+        #             terms = np.unique(self._coords._data["Term"])
+        #         finally:
+        #             for term in terms:
+        #                 idx = self._idx(Term=term)
+        #                 plt.plot(self._coords.select(idx)["Date"], self._vals.select(idx)["Rate"], label=term)
+        #             plt.legend()
+        #             plt.title(self.name)
+        #             plt.show()
 
-            case "termstructure":
-                """
-                Plot the term structure of the rates.
-                """
-                date = kwargs["Date"]
-                terms = np.arange(1, 31)
+        #     case "termstructure":
+        #         """
+        #         Plot the term structure of the rates.
+        #         """
+        #         date = kwargs["Date"]
+        #         terms = np.arange(1, 31)
 
-                data = self.get_values(Date=date, Term=terms)
-                terms = np.array([point["Term"] for point in data]).flatten()
-                rates = np.array([point["Rate"] for point in data]).flatten()
+        #         data = self.get_values(Date=date, Term=terms)
+        #         terms = np.array([point["Term"] for point in data]).flatten()
+        #         rates = np.array([point["Rate"] for point in data]).flatten()
 
-                ## TODO: Fix why rates are stored in singletons
+        #         ## TODO: Fix why rates are stored in singletons
 
-
-
-
-                plt.plot(terms, rates)
-                plt.show()
+        #         plt.plot(terms, rates)
+        #         plt.show()
 
                 #     if len(dates) != 1:
                 #      raise ValueError("Can only plot for 1 date")

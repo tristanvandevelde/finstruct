@@ -289,3 +289,8 @@ class GenericUnit(Unit):
         self.ctypes = [type(arg) for arg in args]
         self.conventions = args
 
+
+class CorrelationUnit(Unit):
+
+    name = "Correlation"
+    dtype = float

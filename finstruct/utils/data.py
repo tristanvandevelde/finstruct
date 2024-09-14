@@ -42,7 +42,7 @@ class StructArray(object,
     def __getitem__(self,
                     item):
                 
-        keys = np.asarray(item)
+        keys = np.array(item, ndmin=1, copy=False)
         result = [self._data[key] for key in keys]
         if len(result) == 1:
             result = list(chain.from_iterable(result))
@@ -73,6 +73,15 @@ class StructArray(object,
     def dim(self):
 
         return len(self._data.keys()), np.array([len(arr) for arr in self._data.values()][0])
+    
+    @classmethod
+    def empty(cls,
+              dicttypes,
+              size):
+        
+        dictdata = {name: np.empty(size) for name in dicttypes.keys()}
+
+        return cls(dictdata, dicttypes)
 
     # def append(self,
     #            **kwargs):

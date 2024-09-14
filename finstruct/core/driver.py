@@ -128,6 +128,11 @@ class Driver(metaclass=MetaDriver):
     def dim(self):
 
         return len(self._DIMTYPES["Basis"])
+    
+    @property
+    def conventions(self):
+
+        pass
             
 
 

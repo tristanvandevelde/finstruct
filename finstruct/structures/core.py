@@ -42,6 +42,22 @@ class Structure(metaclass=Meta):
                  driver: Driver = None,
                  data: dict = None):
         
+        """
+        Initialize Structure.
+
+        Parameters
+        ----------
+
+        name: str
+            Name of the Structure to be set.
+        driver: Driver
+            Driver to use for construction.
+        data_vals: dict[P,N]
+            Values of the data to load in. Dictionary with P keys, each representing a variable. 
+            All variables of the Driver should be present.
+            The values are lists/arrays, each with a size 1xN.
+        """
+        
         _DEFAULTS = {
             "DRIVERTYPE": Driver
         }
@@ -70,19 +86,16 @@ class Structure(metaclass=Meta):
         for unitname in list(dicttypes.keys()):
             dictdata_final = {**dictdata_final, **{unitname : [row[unitname] for row in dictdata]}}
 
-        self.data = StructArray(dictdata_final, dicttypes)
+        self._data = StructArray(dictdata_final, dicttypes)
         
 
     def __validate__(self):
 
         if self._driver is None:
-            # take from drivertype
             self._driver = self._DEFAULTDRIVER
             #self._driver = Driver.read_config(f"config/drivers/{self._DEFAULTDRIVER}.ini")
 
         TYPECHECK(self._driver, self._DRIVERTYPE)
-
-
 
     @classmethod
     def read_csv(cls,
@@ -120,8 +133,18 @@ class Structure(metaclass=Meta):
         return f"{self.__class__.__name__}({self.name}, {repr(self._driver)})"
     
 
-        
+    # @property
+    # def conventions(self):
 
+    #     conventions = {
+    #         "Index":self._driver.Index.conventions,
+    #         "Basis": self._driver.Basis.conventions,
+    #         "Projection"
+
+    def set_convention(self,
+                       **kwargs):
+        
+        pass
 
 class Grid(Structure,
            metaclass=Meta):
@@ -154,7 +177,7 @@ class Manifold(Structure,
                  interpolator: object = None) -> None:
         
         """
-        Initialize Structure.
+        Initialize Manifold.
 
         Parameters
         ----------
@@ -179,15 +202,13 @@ class Manifold(Structure,
             self.interpolator = None
         # TYPECHECK(self.interpolator, None)
 
-    
-    
     def _interpolate(self,
                      **kwargs):
         
         """
         All Basis variables are assumed to be given.
         """
-        # check
+
         length = np.cumprod([len(list(options)) for options in list(kwargs.values())])[-1]
 
         # Should probably be replaced by StructArrays
@@ -206,8 +227,8 @@ class Manifold(Structure,
 
             selection = dict(zip(self._driver.Index.names, combination))
 
-            coords_input = np.array(self.data.filter(**selection)[self._driver.Basis.names], dtype=np.float64)
-            values_input = np.array(self.data.filter(**selection)[self._driver.Projection.names], dtype=np.float64)
+            coords_input = np.array(self._data.filter(**selection)[self._driver.Basis.names], dtype=np.float64)
+            values_input = np.array(self._data.filter(**selection)[self._driver.Projection.names], dtype=np.float64)
 
             cs = CubicSpline(coords_input.flatten(), values_input.flatten())
             values_output = cs(basis_grid.flatten())
@@ -274,18 +295,18 @@ class Manifold(Structure,
         return index_condition, coords_condition, values_condition
 
 
-    @property
-    def df(self):
+    # @property
+    # def df(self):
 
-        """TODO: Check"""
+    #     """TODO: Check"""
 
-        # get values for all defaults
-        index, coords, values = self.get_values()
+    #     # get values for all defaults
+    #     index, coords, values = self.get_values()
 
-        df = pd.DataFrame({**index._data, **coords._data, **values._data},
-                          dtypes=[*index._dtypes, *coords._dtypes, *values._dtypes])
+    #     df = pd.DataFrame({**index._data, **coords._data, **values._data},
+    #                       dtypes=[*index._dtypes, *coords._dtypes, *values._dtypes])
         
-        return df
+    #     return df
     
 
     # def __add__(self,
